@@ -10,8 +10,9 @@ namespace Servant.Control
         ISingltone<MainCharacterController>
     {
         private const string MoveBooleanName = "IsMove";
-        private const string RunBooleanName = "IsRun";
         private const string FallBooleanName = "Fall";
+        private const string IsGarpoonAnimName = "IsGarpoon";
+        private const string IsJumpAnimName = "IsJump";
         private bool isLeftSide = false;
         public bool IsLeftSide_
         {
@@ -52,17 +53,6 @@ namespace Servant.Control
                 SetDuoEventedBoolean(ref isFall, FallBooleanName,
                 () => FallingEvent(),
                 () => LandingEvent(), value);
-            }
-        }
-        private bool isRun = false;
-        public bool IsRun_
-        {
-            get => isRun;
-            private set
-            {
-                SetDuoEventedBoolean(ref isRun, RunBooleanName,
-                () => SetRunModeEvent(),
-                () => SetWalkModeEvent(), value);
             }
         }
         private bool isMove = false;
@@ -114,15 +104,43 @@ namespace Servant.Control
             { }
             public Coroutine DelayCoroutine;
         }
-        private ControllerState CurrentState = WalkStayState;
-        private void ChangeState(ControllerState changedState)
+        private class RockingControllerState : ControllerState
         {
-            CurrentState.ExitStateAction();
-            CurrentState = changedState;
-            CurrentState.EnterStateAction();
+            public RockingControllerState(StateName stateName, Action updateAction, Action landAction,
+                Action fallAction, Action enterStateAction, Action exitStateAction) :
+                base(stateName, updateAction, landAction, fallAction, enterStateAction, exitStateAction)
+            { }
+            public DistanceJoint2D RopeJoint;
+        }
+        private ControllerState CurrentControllerState = WalkStayState;
+        private ControllerState CurrentGarpoonState =GarpoonStates.ReadyState;
+        private void ChangeControllerState(ControllerState changedState)
+        {
+            CurrentControllerState.ExitStateAction();
+            CurrentControllerState = changedState;
+            CurrentControllerState.EnterStateAction();
             ChangeControllerStateEvent();
         }
-        public StateName GetCurrentStateName()=>CurrentState.StateName;
+        private void ChangeGarpoonState(ControllerState changedState)
+        {
+            CurrentGarpoonState.ExitStateAction();
+            CurrentGarpoonState = changedState;
+            CurrentGarpoonState.EnterStateAction();
+            ChangeGarpoonControllerStateEvent();
+        }
+        private void ResetControllerState()
+        {
+            ChangeControllerState(isFall ? FallState : WalkStayState);
+        }
+        public StateName GetCurrentStateName()=>CurrentControllerState.StateName;
+        public void SetGarpoonAnimation(bool isGarpoon)
+        {
+            animator.SetBool(IsGarpoonAnimName, isGarpoon);
+        }
+        public void SetJumpAnimation(bool isJump)
+        {
+            animator.SetBool(IsJumpAnimName, isJump);
+        }
         //Events
         public event Action StartMovingEvent = Registry.EmptyMethod;
         public event Action StopMovingEvent= Registry.EmptyMethod;
@@ -134,6 +152,7 @@ namespace Servant.Control
         public event Action LandingEvent = Registry.EmptyMethod;
         public event Action ChangeControllerStateEvent = Registry.EmptyMethod;
         public event Action InteractionEvent = Registry.EmptyMethod;
+        public event Action ChangeGarpoonControllerStateEvent = Registry.EmptyMethod;
         //Moving
         private void SmoothMove(float speed)
         {
@@ -141,11 +160,12 @@ namespace Servant.Control
         }
         private void AddAccelForce(Vector2 forceDirection,float speed)
         {
-        	rigidbody.AddForce(forceDirection*speed / Time.deltaTime, ForceMode2D.Impulse);
+        	rigidbody.AddForce(forceDirection * Registry.AccelMoveModifier * speed / Time.deltaTime,
+                ForceMode2D.Impulse);
         }
         private void AccelMove(float speed)
         {
-            AddAccelForce(MoveDirection*Registry.AccelMoveModifier,speed);
+            AddAccelForce(MoveDirection,speed);
         }
         private void Jump()
         {
@@ -158,6 +178,16 @@ namespace Servant.Control
         }
         //Falling
         public void StartFalling() => IsFall_ = true;
+        //Physics
+        float DefaultGravity;
+        public void TurnGravity(bool gravityMode)
+        {
+            rigidbody.gravityScale = gravityMode ? DefaultGravity : 0;
+        }
+        public void ResetVelocity()
+        {
+            rigidbody.velocity = Vector2.zero;
+        }
         //Interaction
         private void Interact()
         {
@@ -202,7 +232,8 @@ namespace Servant.Control
         //Unity API
         private void Update()
         {
-            CurrentState.UpdateAction();
+            CurrentControllerState.UpdateAction();
+            CurrentGarpoonState.UpdateAction();
         }
         private void Awake()
         {
@@ -224,8 +255,15 @@ namespace Servant.Control
             if(spriteRenderer==null) throw ServantException.NullInitialization("spriteRenderer");
             if (animator == null) throw ServantException.NullInitialization("animator");
             if (groundChecker == null) throw ServantException.NullInitialization("groundChecker");
-            FallingEvent +=()=>CurrentState.FallAction();
-            LandingEvent += () => CurrentState.LandAction();
+            FallingEvent +=()=>CurrentControllerState.FallAction();
+            LandingEvent += () => CurrentControllerState.LandAction();
+            FallingEvent += () => CurrentGarpoonState.FallAction();
+            LandingEvent += () => CurrentGarpoonState.LandAction();
+            DefaultGravity = rigidbody.gravityScale;
+        }
+        private void Start()
+        {
+            ResetControllerState();
         }
         private void OnDestroy()
         {
@@ -233,8 +271,7 @@ namespace Servant.Control
         }
         private void OnCollisionEnter2D(Collision2D collision)
         {
-            if (IsFall_&&!groundChecker.IsFall()) IsFall_ = false;
-            //if(collision.contacts[0].normal)
+            if (IsFall_&&!groundChecker.IsFreeStanding()) IsFall_ = false;
         }
         //Serialization 
         /*

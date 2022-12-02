@@ -4,6 +4,7 @@ using MuonhoryoLibrary;
 using Servant.GUI;
 using System.Collections.Generic;
 using Servant.Serialization;
+using Servant.Control;
 
 namespace Servant
 {
@@ -17,6 +18,8 @@ namespace Servant
         [SerializeField]
         private GUIManagerData GUIData;
         [SerializeField]
+        private GameObject GarpoonBasePrefab;
+        [SerializeField]
         private List<GameObject> SerializatedObjPrefabs;
         Initialization ISingltone<Initialization>.Singltone
         { get => singltone;
@@ -28,11 +31,13 @@ namespace Servant
             if (LoadingScreenPrefab == null) throw ServantException.NullInitialization
                     ("LoadingScreenPrefab");
             if (GUIData == null) throw ServantException.NullInitialization("GUIData");
+            if (GarpoonBasePrefab == null) throw ServantException.NullInitialization("GarpoonBasePrefab");
             if (SerializatedObjPrefabs == null) throw ServantException.NullInitialization
                     ("SerializatedObjPrefabs");
             GUIManager.GUICanvas = GUICanvas;
             Registry.LoadingScreenPrefab = LoadingScreenPrefab;
             GUIManager.Data = GUIData;
+            MainCharacterController.GarpoonBasePrefab = GarpoonBasePrefab;
             LocationSerializationData.SetSerializatedObjsPrefabs(SerializatedObjPrefabs);
             Destroy(this);
         }

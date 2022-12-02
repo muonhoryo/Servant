@@ -1,6 +1,7 @@
 ﻿
 using UnityEngine;
 using System;
+using System.Runtime.InteropServices.WindowsRuntime;
 
 namespace Servant
 {
@@ -26,5 +27,7 @@ namespace Servant
         {
             return new ServantException("Serialization exception."+additionalInfo);
         }
+        public static ServantException NoneAssignedMethod() =>
+            new ServantException("Method is not assigned.");
     }
 }

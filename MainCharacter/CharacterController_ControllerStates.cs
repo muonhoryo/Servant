@@ -7,23 +7,26 @@ namespace Servant.Control
     public sealed partial class MainCharacterController
     {
         static MainCharacterController Controller => Registry.CharacterController;
+        //InputsNames
+        private const string Input_Interaction = "Interaction";
+        private const string Input_Jump = "Jump";
+        private const string Input_Horizontal = "Horizontal";
+        private const string Input_Shoot = "Shoot";
+        private const string Input_GarpoonPull = "Pull";
         //UpdateAction
         private static void WalkStayUpdateAction()
-        { WalkStayAction();JumpAction(); WalkStayChangeRunModeAction();
-            Interaction();}
+        { WalkStayCheck(); JumpAction(); Interaction();}
+
         private static void WalkMoveUpdateAction()
-        { WalkMoveAction();JumpAction();WalkChangeRunModeAction();
-            Interaction();}
-        private static void RunStayUpdateAction()
-        { RunStayAction();JumpAction();RunStayChangeRunModeAction();
-            Interaction();}
-        private static void RunMoveUpdateAction()
-        { RunMoveAction();JumpAction();RunChangeRunModeAction();
-            Interaction();}
+        { WalkMoveAction(); JumpAction(); Interaction(); }
+        private static void FallUpdateAction()
+        { FallMoveAction(); Interaction(); }
+        private static void RockingUpdateAction()
+        { RockingMoveAction();Interaction(); }
         //Interaction
         private static void Interaction()
         {
-            if(Input.GetButtonDown("Interaction"))
+            if(Input.GetButtonDown(Input_Interaction))
             {
                 Controller.Interact();
             }
@@ -31,10 +34,10 @@ namespace Servant.Control
         //JumpAction
         private static void JumpAction()
         {
-        	if(Input.GetButtonDown("Jump"))
+        	if(Input.GetButtonDown(Input_Jump))
         	{
         		Controller.Jump();
-                Controller.ChangeState(JumpState);
+                Controller.ChangeControllerState(JumpState);
         	}
         }
         //MoveAction
@@ -42,7 +45,7 @@ namespace Servant.Control
         {
             Controller.IsLeftSide_ = direction < 0;
         }
-        private static float GetHorizontalDirection() => Input.GetAxisRaw("Horizontal");
+        private static float GetHorizontalDirection() => Input.GetAxisRaw(Input_Horizontal);
         private static void MoveAction(float direction, float speedConst)
         {
             SetCharacterDirection(direction);
@@ -53,7 +56,7 @@ namespace Servant.Control
             float direction = GetHorizontalDirection();
             if(direction == 0)
             {
-                Controller.ChangeState(stayState);
+                Controller.ChangeControllerState(stayState);
                 Controller.StopMove();
             }
             else
@@ -63,8 +66,6 @@ namespace Servant.Control
         }
         private static void WalkMoveAction()=>
             MoveWithStayTransitAction(Registry.MainCharacterWalkSpeed, WalkStayState);
-        private static void RunMoveAction()=>
-            MoveWithStayTransitAction(Registry.MainCharacterRunSpeed, RunStayState);
         private static void FallMoveAction()
         {
             float direction = GetHorizontalDirection();
@@ -74,92 +75,79 @@ namespace Servant.Control
                 Controller.AccelMove(Registry.MainCharacterJumpMoveSpeed*direction);
             }
         }
-        //MoveAction(stay)
-        private static void StayAction(float direction,ControllerState moveState)
+        private static void RockingMoveAction()
         {
+            float direction = GetHorizontalDirection();
             if (direction != 0)
             {
-                Controller.ChangeState(moveState);
-                Controller.IsMove_ = true;
-            }
-        }
-        private static void StayAction(ControllerState moveState)
-        {
-            StayAction(GetHorizontalDirection(), moveState);
-        }
-        private static void WalkStayAction() => StayAction( WalkState);
-        private static void RunStayAction() => StayAction( RunState);
-        //LandAction
-        private static void FallLandAction()
-        {
-            if (Controller.IsRun_)
-            {
-                Controller.ChangeState(Controller.IsMove_ ? RunState : RunStayState);
+                Vector2 force = Vector2.Perpendicular
+                    (Vector3.Normalize
+                        (Controller.Projectile.transform.position - Controller.transform.position)) * -direction;
+                Controller.AddAccelForce(force, Registry.GarpoonRockingMoveSpeed);
+                SetCharacterDirection(direction);
             }
             else
             {
-                Controller.ChangeState(Controller.IsMove_ ? WalkState : WalkStayState);
+                Controller.IsLeftSide_ = Controller.transform.position.x > Controller.Projectile.transform.position.x;
             }
+        }
+        //MoveAction(stay)
+        private static void WalkStayCheck()
+        {
+            if (GetHorizontalDirection() != 0)
+            {
+                Controller.ChangeControllerState(WalkState);
+                Controller.IsMove_ = true;
+            }
+        }
+        //LandAction
+        private static void FallLandAction()
+        {
+            Controller.ChangeControllerState(Controller.IsMove_ ? WalkState : WalkStayState);
             Controller.StopMove();
         }
         //FallAction
         private static void FallAction()
         {
-            Controller.ChangeState(FallState);
+            Controller.ChangeControllerState(FallState);
         }
         //EnterStateAction
         private static void EnterWalkStayState()
         {
             Controller.IsMove_ = false;
-            Controller.IsRun_ = false;
         }
         private static void EnterWalkState()
         {
             Controller.IsMove_ = true;
-            Controller.IsRun_ = false;
-        }
-        private static void EnterRunStayState()
-        {
-            Controller.IsMove_ = false;
-            Controller.IsRun_ = true;
-        }
-        private static void EnterRunState()
-        {
-            Controller.IsMove_ = true;
-            Controller.IsRun_ = true;
         }
         private static IEnumerator JumpStateTransitDelay()
         {
             yield return new WaitForSeconds(Registry.JumpStateTransitDelay);
-            if (!Controller.IsRun_) Controller.ChangeState(Controller.IsMove_ ? WalkState : WalkStayState);
-            else Controller.ChangeState(Controller.IsMove_ ? RunState : RunStayState);
+            Controller.ChangeControllerState(Controller.IsMove_ ? WalkState : WalkStayState);
             yield break;
         }
         private static void EnterJumpStateAction()
         {
-            (Controller.CurrentState as TempleControllerState).DelayCoroutine=
-                Controller.StartCoroutine(JumpStateTransitDelay());
+            JumpState.DelayCoroutine=Controller.StartCoroutine(JumpStateTransitDelay());
+            Controller.SetJumpAnimation(true);
+        }
+        private static void EnterRockingStateAction()
+        {
+            RockingState.RopeJoint = Controller.gameObject.AddComponent<DistanceJoint2D>();
+            RockingState.RopeJoint.connectedBody = Controller.Projectile.GetComponent<Rigidbody2D>();
         }
         //ExitStateAction
         private static void ExitJumpStateAction()
         {
-            Controller.StopCoroutine((Controller.CurrentState as TempleControllerState).DelayCoroutine);
+            Controller.StopCoroutine(JumpState.DelayCoroutine);
+            Controller.SetJumpAnimation(false);
         }
-        //ChangeRunMoveAction
-        private static void ChangeRunModeAction(ControllerState changedState)
+        private static void ExitRockingStateAction()
         {
-            if (Input.GetButtonDown("ChangeRunMode"))
-            {
-                Controller.IsRun_ = !Controller.IsRun_;
-                Controller.ChangeState(changedState);
-            }
+            Destroy(RockingState.RopeJoint);
         }
-        private static void WalkStayChangeRunModeAction() => ChangeRunModeAction(RunStayState);
-        private static void WalkChangeRunModeAction() => ChangeRunModeAction(RunState);
-        private static void RunStayChangeRunModeAction() => ChangeRunModeAction(WalkStayState);
-        private static void RunChangeRunModeAction()=> ChangeRunModeAction(WalkState);
 
-        private static ControllerState WalkStayState =new ControllerState
+        private static readonly ControllerState WalkStayState =new ControllerState
             (StateName.WalkStayState,
              UpdateAction: WalkStayUpdateAction,
              LandAction: Registry.EmptyMethod,
@@ -173,42 +161,46 @@ namespace Servant.Control
              FallAction: FallAction,
              EnterStateAction:EnterWalkState,
              ExitStateAction: Registry.EmptyMethod);
-        private static readonly ControllerState RunStayState =new ControllerState
-            (StateName.RunStayState,
-             UpdateAction: RunStayUpdateAction,
-             LandAction: Registry.EmptyMethod,
-             FallAction: FallAction,
-             EnterStateAction: EnterRunStayState,
-             ExitStateAction: Registry.EmptyMethod);
-        private static readonly ControllerState RunState =new ControllerState
-            (StateName.RunState,
-             UpdateAction: RunMoveUpdateAction,
-             LandAction: Registry.EmptyMethod,
-             FallAction: FallAction,
-             EnterStateAction: EnterRunState,
-             ExitStateAction: Registry.EmptyMethod);
         private static readonly ControllerState FallState = new ControllerState
             (StateName.FallState,
-             UpdateAction: FallMoveAction,
+             UpdateAction: FallUpdateAction,
              LandAction: FallLandAction,
              FallAction: Registry.EmptyMethod,
              EnterStateAction: Registry.EmptyMethod,
              ExitStateAction: Registry.EmptyMethod);
-        private static readonly ControllerState JumpState = new TempleControllerState
+        private static readonly TempleControllerState JumpState = new TempleControllerState
             (StateName.JumpState,
-            updateAction: FallMoveAction,
+            updateAction: FallUpdateAction,
             landAction: Registry.EmptyMethod,
             fallAction: FallAction,
             enterStateAction: EnterJumpStateAction,
              exitStateAction: ExitJumpStateAction);
+        private static readonly RockingControllerState RockingState = new RockingControllerState
+            (StateName.RockingState,
+             updateAction: RockingUpdateAction,
+             landAction: FallLandAction,
+             fallAction: Registry.EmptyMethod,
+             enterStateAction: EnterRockingStateAction,
+             exitStateAction: ExitRockingStateAction);
+        private static readonly ControllerState NoneState = new ControllerState
+                (StateName.NoneState,
+                UpdateAction: Registry.EmptyMethod,
+                LandAction: Registry.EmptyMethod,
+                FallAction: Registry.EmptyMethod,
+                EnterStateAction: Registry.EmptyMethod,
+                ExitStateAction: Registry.EmptyMethod);
         public enum StateName
         {
             WalkStayState,
             WalkState,
-            RunStayState,
-            RunState,
             FallState,
-            JumpState
+            JumpState,
+            RockingState,
+            NoneState,
+            Garpoon_ReadyState,
+            Garpoon_ShootState,
+            Garpoon_HookState,
+            Garpoon_PullState
         }
     }
 }

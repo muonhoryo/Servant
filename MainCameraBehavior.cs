@@ -8,7 +8,9 @@ namespace Servant
 {
     public sealed class MainCameraBehavior : MonoBehaviour, ISingltone<MainCameraBehavior>
     {
-        private static MainCameraBehavior singltone;
+        public static MainCameraBehavior singltone { get; private set; }
+        [SerializeField]
+        private Camera CameraComp;
         MainCameraBehavior ISingltone<MainCameraBehavior>.Singltone 
         { get => singltone;
             set => singltone=value; }
@@ -59,6 +61,8 @@ namespace Servant
             CurrentState = state;
             ChangeModeEvent();
         }
+        public Vector2 GetCursorPos()=> CameraComp.ScreenToWorldPoint
+                (new Vector3(Input.mousePosition.x, Input.mousePosition.y, transform.position.y));
         private void LateUpdate()
         {
             Vector2 nextPos = CurrentState.GetNextPos();

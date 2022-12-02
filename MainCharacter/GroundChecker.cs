@@ -8,6 +8,7 @@ namespace Servant.Control
         public uint CollisionCount { get; private set; } = 0;
         private MainCharacterController owner;
         private new CircleCollider2D collider;
+        private float PrevHeight=0;
         private void Awake()
         {
             if (owner == null) owner = GetComponentInParent<MainCharacterController>();
@@ -17,7 +18,7 @@ namespace Servant.Control
         }
         private void Start()
         {
-            if (IsFall())
+            if (IsFreeStanding())
             {
                 owner.StartFalling();
             }
@@ -34,15 +35,26 @@ namespace Servant.Control
                 CollisionCount--;
                 if (CollisionCount == 0)
                 {
-                    owner.StartFalling();
+                    enabled = true;
                 }
             }
-        } 
-        public bool IsFall()
+        }
+        private void FixedUpdate()
+        {
+            if (transform.position.y < PrevHeight)
+            {
+                owner.StartFalling();
+                enabled = false;
+            }
+            else PrevHeight = transform.position.y;
+        }
+        private void OnEnable()
+        {
+            PrevHeight = transform.position.y;
+        }
+        public bool IsFreeStanding()
         {
             return CollisionCount == 0;
-            /*return Physics2D.OverlapCircle((Vector2)transform.position + collider.offset,
-                collider.radius, Registry.GroundLayer) == null;*/
         }
     }
 }
