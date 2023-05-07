@@ -1,0 +1,10 @@
+0: MainCharacter
+1: NonePassablePlatform
+2: SimpleLocationTransit
+3: FAKELocationTransit
+4: Wall
+5: MovableBox
+6: SaveInfoContainer
+7: CheckPoint
+8: StartButton
+9: LoadButton

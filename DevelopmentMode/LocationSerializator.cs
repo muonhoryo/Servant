@@ -1,8 +1,6 @@
 
-using System.IO;
 using UnityEngine;
 using Servant.Serialization;
-using System.Collections.Generic;
 
 namespace Servant.DevelopmentOnly
 {
@@ -10,18 +8,16 @@ namespace Servant.DevelopmentOnly
     {
         [SerializeField]
         private string LocationName;
+        [SerializeField]
+        private Rect CameraMoveLimit;
+        [SerializeField]
+        private Rect CameraMoveTrigger;
         [ContextMenu("Serialize")]
         void Serialize()
         {
-            string path = LocationSerializationData.GetSerializationPath(LocationName);
-            using(StreamWriter writer= new StreamWriter(path, false))
-            {
-                IEnumerator<string> list = LocationSerializationData.GetLocationSerialization();
-                while (list.MoveNext())
-                {
-                    writer.WriteLine(list.Current);
-                }
-            }
+            SaveLoadSystem.SerializeLocation(GetSettings());
         }
+        private SaveLoadSystem.ILocationSettings GetSettings()
+            => new SaveLoadSystem.LocationSettings_0_3_0(LocationName,CameraMoveLimit,CameraMoveTrigger);
     }
 }

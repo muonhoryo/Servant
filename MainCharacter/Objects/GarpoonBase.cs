@@ -13,6 +13,7 @@ namespace Servant
         [SerializeField]
         private SpriteRenderer RopeComp;
         public GarpoonProjectile Projectile { get; private set; }
+        public GameObject HitObject { get; private set; }
         private void Update()
         {
             Quaternion angle = Quaternion.Euler(new Vector3(0, 0,
@@ -21,7 +22,7 @@ namespace Servant
             RopeComp.size = new Vector2(RopeComp.size.x, Vector2.Distance(transform.position,
                 Projectile.transform.position));
         }
-        public GarpoonProjectile Initialize(Vector2 Direction, float Speed, float MaxDistance,
+        public void Initialize(Vector2 Direction, float Speed, float MaxDistance,
             float MaxHookDistance)
         {
             float angleInDegress = Vector2.SignedAngle(Vector2.up, Direction);
@@ -35,12 +36,17 @@ namespace Servant
             void OnMissAction()
             {
                 Destroy(gameObject);
-                Projectile.OnMiss -= OnMissAction;
-                Projectile.OnTurnOff -= OnMissAction;
+                Projectile.ProjectileMissEvent -= OnMissAction;
+                Projectile.HookTurnOffEvent -= OnMissAction;
             }
-            Projectile.OnMiss += OnMissAction;
-            Projectile.OnTurnOff += OnMissAction;
-            return Projectile;
+            void OnHitAction(GameObject hitObject)
+            {
+                HitObject = hitObject;
+                Projectile.ProjectileHitEvent -= OnHitAction;
+            }
+            Projectile.ProjectileMissEvent += OnMissAction;
+            Projectile.HookTurnOffEvent += OnMissAction;
+            Projectile.ProjectileHitEvent += OnHitAction;
         }
     }
 }

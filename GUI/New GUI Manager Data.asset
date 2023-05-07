@@ -13,3 +13,5 @@ MonoBehaviour:
   m_Name: New GUI Manager Data
   m_EditorClassIdentifier: 
   TempleTextPrefab: {fileID: 7017286489289777266, guid: 0d0b7f0f1768b5541805b9988174081f, type: 3}
+  LoadingScreenPrefab: {fileID: 9024393748315738324, guid: 12b284deed61b4c4aaee90e7adf0d6d9, type: 3}
+  ResetLocationScreenPrefab: {fileID: 6415732185561042063, guid: 0c46cc95612f5c34e98efa2359f2a229, type: 3}

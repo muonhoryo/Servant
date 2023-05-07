@@ -8,46 +8,23 @@ namespace Servant.InteractionObjects
 {
     public class LocationTransit : DefaultInteractiveObject
     {
-        /*
-         SERIALIZATION QUEVE:
-         Position
-         NextLocationPos
-         NextLocationName
-        */
-        [SerializeField]
-        private Vector2 NextLocationPos;
-        [SerializeField]
-        private string NextLocationName;
-        public override void Deserialize(string serializedObject, int dataStart)
+        public interface ILocationTransitInfo
         {
-        	transform.position=LocationSerializationData.DeserializeVector2
-                (LocationSerializationData.GetSubData(serializedObject,dataStart,out dataStart,2));
-        	NextLocationPos= LocationSerializationData.DeserializeVector2
-                (LocationSerializationData.GetSubData(serializedObject,dataStart+1,out dataStart,2));
-        	NextLocationName=LocationSerializationData.GetSubData
-                (serializedObject,dataStart+1,out dataStart,isStringData:true);
+            public string NextLocationName_ { get; }
+            public Vector2 NextMainCharacterPos_ { get; }
         }
-        public override string Serialize()
-        {
-            //ID
-            return this.GetSerializedId() + LocationSerializationData.SeparateSym +
-               //Transit position
-               transform.position.SerializeVector2() + LocationSerializationData.SeparateSym +
-               //NextLocationPos
-               NextLocationPos.SerializeVector2() + LocationSerializationData.SeparateSym +
-               //NextLocationName
-               LocationSerializationData.QuotesSym+NextLocationName+LocationSerializationData.QuotesSym
-               +LocationSerializationData.SeparateSym;
-        }
+        private ILocationTransitInfo TransitInfo;
+
         protected override void Interact()
         {
-            LocationSerializationData.EndLocationLoadingEvent += SetMainCharacterPosOnLoad;
-            Registry.LoadLocation( NextLocationName);
+            SaveLoadSystem.EndLocationLoadingEvent += SetMainCharacterPosOnLoad;
+            SaveLoadSystem.LoadLevel(TransitInfo.NextLocationName_);
         }
         private void SetMainCharacterPosOnLoad()
         {
-            Registry.CharacterController.transform.position = NextLocationPos;
-            LocationSerializationData.EndLocationLoadingEvent -= SetMainCharacterPosOnLoad;
+            Registry.CharacterController.transform.position = TransitInfo.NextMainCharacterPos_;
+            SaveLoadSystem.EndLocationLoadingEvent -= SetMainCharacterPosOnLoad;
         }
+        public void SetData(ILocationTransitInfo data) => TransitInfo = data;
     }
 }

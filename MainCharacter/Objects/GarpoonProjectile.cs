@@ -6,9 +6,15 @@ namespace Servant
 {
     public sealed class GarpoonProjectile:MonoBehaviour
     {
-        public event Action OnMiss = Registry.EmptyMethod;
-        public event Action OnHit = Registry.EmptyMethod;
-        public event Action OnTurnOff = Registry.EmptyMethod;
+        public enum HitType
+        {
+            none,
+            Ground,
+            Item
+        }
+        public event Action ProjectileMissEvent;
+        public event Action<GameObject> ProjectileHitEvent;
+        public event Action HookTurnOffEvent;
         public float Speed { get; private set; } = 0;
         public Vector2 Direction { get; private set; } = Vector2.zero;
         public float MaxHookDistance { get; private set; } = -1f;
@@ -22,10 +28,14 @@ namespace Servant
                     (transform.position, Direction, Speed, Registry.GarpoonLayerMask);
                 if (hit.collider!=null)
                 {
-                    transform.position = hit.point;
                     PassedDistance += hit.distance;
-                    OnHit();
                     enabled = false;
+                    transform.position = hit.point;
+                    ProjectileHitEvent?.Invoke(hit.collider.gameObject);
+                    if (hit.collider.gameObject.layer == Registry.MovableItemLayer)
+                    {
+                        gameObject.transform.parent = hit.collider.gameObject.transform;
+                    }
                 }
                 else
                 {
@@ -46,12 +56,12 @@ namespace Servant
             }
             if (PassedDistance >= MaxHookDistance)
             {
-                OnMiss();
+                ProjectileMissEvent?.Invoke();
             }
         }
         public void TurnHookOff()
         {
-            OnTurnOff();
+            HookTurnOffEvent?.Invoke();
         }
         public void Initialize(Vector2 Direction, float Speed, float MaxDistance,float MaxHookDistance)
         {

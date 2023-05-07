@@ -1,6 +1,7 @@
 
 using UnityEngine;
 using MuonhoryoLibrary;
+using Servant.InteractionObjects;
 
 namespace Servant.DevelopmentOnly
 {
@@ -29,7 +30,7 @@ namespace Servant.DevelopmentOnly
         private void Awake()
         {
             if(!TryGetComponent(out collider))
-                throw ServantException.NullInitialization("collider");
+                throw ServantException.GetNullInitialization("collider");
         }
         private IInteractiveObject GetNearestInteractiveObject()
         {

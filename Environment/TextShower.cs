@@ -7,52 +7,18 @@ namespace Servant.InteractionObjects
 {
     public sealed class TextShower : DefaultInteractiveObject
     {
-        /// <summary>
-        /// SERIALIZATION QUEVE:
-        /// Transform.position
-        /// TextShowingOffset
-        /// ShowedText
-        /// ShowTime
-        /// </summary>
-        [SerializeField]
-        private Vector2 TextShowingOffset;
-        [SerializeField]
-        private string ShowedText;
-        [SerializeField]
-        [Range(0, 1000)]
-        private float ShowTime;
-        public override void Deserialize(string serializedObject, int dataStart)
+        public interface ITextShowerInfo
         {
-            transform.position = LocationSerializationData.DeserializeVector2
-                (LocationSerializationData.GetSubData(serializedObject, dataStart, out dataStart, 2));
-            TextShowingOffset = LocationSerializationData.DeserializeVector2
-                (LocationSerializationData.GetSubData(serializedObject, dataStart + 1, out dataStart, 2));
-            ShowedText = LocationSerializationData.GetSubData(serializedObject, dataStart + 1,
-                out dataStart, 1);
-            if(!float.TryParse(LocationSerializationData.GetSubData(serializedObject,dataStart+1,
-                out dataStart),out ShowTime))
-            {
-                throw ServantException.SerializationException();
-            }
+            public string ShowedText_ { get; }
+            public Vector2 TextShowingOffset_ { get; }
+            public float ShowTime_ { get; }
         }
-        public override string Serialize()
-        {
-            //Id
-            return this.GetSerializedId() + LocationSerializationData.SeparateSym +
-                //transform.position
-                transform.position.SerializeVector2() + LocationSerializationData.SeparateSym +
-                //TextShowingOffset
-                TextShowingOffset.SerializeVector2() + LocationSerializationData.SeparateSym +
-                //ShowedText
-                LocationSerializationData.QuotesSym+ShowedText+LocationSerializationData.QuotesSym 
-                + LocationSerializationData.SeparateSym +
-                //ShowTime
-                ShowTime + LocationSerializationData.SeparateSym;
-        }
+        private ITextShowerInfo TextShowingInfo;
         protected override void Interact()
         {
-            GUIManager.InitializeNewTempleText((Vector2)transform.position+TextShowingOffset,
-                ShowedText, ShowTime);
+            GUIManager.InitializeNewTempleText((Vector2)transform.position+ TextShowingInfo.TextShowingOffset_,
+                TextShowingInfo.ShowedText_, TextShowingInfo.ShowTime_);
         }
+        public void SetData(ITextShowerInfo data)=> TextShowingInfo = data;
     }
 }

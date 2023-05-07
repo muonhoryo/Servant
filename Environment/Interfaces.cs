@@ -1,7 +1,7 @@
 ﻿
 
 
-namespace Servant
+namespace Servant.InteractionObjects
 {
     public interface IInteractiveObject
     {

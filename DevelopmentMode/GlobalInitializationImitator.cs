@@ -15,11 +15,15 @@ namespace Servant.DevelopmentOnly
         public float GarpoonSpeed;
         public float GarpoonProjectileMaxDistance;
         public float GarpoonMaxHookDistance;
-        public float GarpoonPullDoneThreshold;
-        public float GarpoonPullStartSpeed;
-        public float GarpoonPullAcceleration;
-        public float GarpoonPullFinalImpulseMod;
-        public float GarpoonPullStopThreshold;
+        public float GarpoonGroundPullDoneThreshold;
+        public float GarpoonGroundPullStartSpeed;
+        public float GarpoonGroundPullAcceleration;
+        public float GarpoonGroundPullFinalImpulseMod;
+        public float GarpoonGroundCollisionPullStopThreshold;
+        public float GarpoonItemPullDoneThreshold;
+        public float GarpoonItemPullFinalImpulseMod;
+        public float GarpoonItemPullStartSpeed;
+        public float GarpoonItemPullAcceleration;
         public float GarpoonRockingMoveSpeed;
         private static GlobalInitializationImitator singltone;
         GlobalInitializationImitator ISingltone<GlobalInitializationImitator>.Singltone
@@ -36,12 +40,16 @@ namespace Servant.DevelopmentOnly
                  GarpoonSpeed: GarpoonSpeed,
                  GarpoonProjectileMaxDistance: GarpoonProjectileMaxDistance,
                  GarpoonMaxHookDistance: GarpoonMaxHookDistance,
-                 GarpoonPullDoneThreshold: GarpoonPullDoneThreshold,
-                 GarpoonPullFinalImpulseMod: GarpoonPullFinalImpulseMod,
-                 GarpoonPullStartSpeed: GarpoonPullStartSpeed,
-                 GarpoonPullAcceleration: GarpoonPullAcceleration,
-                 GarpoonPullStopThreshold: GarpoonPullStopThreshold,
-                 GarpoonRockingMoveSpeed: GarpoonRockingMoveSpeed);
+                 GarpoonGroundPullDoneThreshold: GarpoonGroundPullDoneThreshold,
+                 GarpoonGroundPullFinalImpulseMod: GarpoonGroundPullFinalImpulseMod,
+                 GarpoonGroundPullStartSpeed: GarpoonGroundPullStartSpeed,
+                 GarpoonGroundPullAcceleration: GarpoonGroundPullAcceleration,
+                 GarpoonGroundCollisionPullStopThreshold: GarpoonGroundCollisionPullStopThreshold,
+                 GarpoonItemPullDoneThreshold: GarpoonItemPullDoneThreshold,
+                 GarpoonItemPullFinalImpulseMod: GarpoonItemPullFinalImpulseMod,
+                 GarpoonItemPullStartSpeed: GarpoonItemPullStartSpeed,
+                 GarpoonItemPullAcceleration: GarpoonItemPullAcceleration,
+                 GarpoonRockingMoveSpeed: GarpoonRockingMoveSpeed) ;
         }
         private void OnValidate()
         {

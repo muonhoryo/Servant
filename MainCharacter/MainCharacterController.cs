@@ -1,40 +1,25 @@
 ﻿
 using System;
 using UnityEngine;
-using MuonhoryoLibrary;
+using Servant.InteractionObjects;
 using Servant.Serialization;
 
 namespace Servant.Control
 {
-    public sealed partial class MainCharacterController : SerializedObject,
-        ISingltone<MainCharacterController>
+    public sealed partial class MainCharacterController :MonoBehaviour
     {
         private const string MoveBooleanName = "IsMove";
         private const string FallBooleanName = "Fall";
         private const string IsGarpoonAnimName = "IsGarpoon";
         private const string IsJumpAnimName = "IsJump";
-        private bool isLeftSide = false;
-        public bool IsLeftSide_
-        {
-            get=> isLeftSide;
-            private set
-            {
-                if (isLeftSide != value)
-                {
-                    isLeftSide = !isLeftSide;
-                    spriteRenderer.flipX = isLeftSide;
-                    ChangeFiewDirectionEvent();
-                }
-            }
-        }
-        private void SetDuoEventedBoolean(ref bool boolean, string animValueName,
+        private void SetDuoEventedBoolean(ref bool booleanField, string animValueName,
         Action trueEvent, Action falseEvent, bool inputValue)
         {
-            if (boolean != inputValue)
+            if (booleanField != inputValue)
             {
-                boolean = !boolean;
-                animator.SetBool(animValueName, boolean);
-                if (boolean)
+                booleanField = !booleanField;
+                animator.SetBool(animValueName, booleanField);
+                if (booleanField)
                 {
                     trueEvent();
                 }
@@ -44,39 +29,11 @@ namespace Servant.Control
                 }
             }
         }
-        private bool isFall = false;
-        private bool IsFall_
-        {
-            get => isFall;
-            set
-            {
-                SetDuoEventedBoolean(ref isFall, FallBooleanName,
-                () => FallingEvent(),
-                () => LandingEvent(), value);
-            }
-        }
-        private bool isMove = false;
-        public bool IsMove_
-        {
-            get => isMove;
-            private set
-            {
-                SetDuoEventedBoolean(ref isMove, MoveBooleanName,
-                () => StartMovingEvent(),
-                () => StopMovingEvent(), value);
-            }
-        }
         private new Rigidbody2D rigidbody;
         private SpriteRenderer spriteRenderer;
         private Animator animator;
         private GroundChecker groundChecker;
-        private Vector2 MoveDirection = Vector2.right;
-        private IInteractiveObject InteractiveTarget;
-        MainCharacterController ISingltone<MainCharacterController>.Singltone
-        {
-            get => Registry.CharacterController;
-            set => Registry.CharacterController = value;
-        }
+        //StateMachine
         private class ControllerState
         {
             public ControllerState(StateName StateName,Action UpdateAction, Action LandAction,Action FallAction,
@@ -112,6 +69,14 @@ namespace Servant.Control
             { }
             public DistanceJoint2D RopeJoint;
         }
+        private class GarpoonPullControllerState : ControllerState
+        {
+            public GarpoonPullControllerState(StateName stateName, Action updateAction, Action landAction,
+                Action fallAction, Action enterStateAction, Action exitStateAction) :
+                base(stateName, updateAction, landAction, fallAction, enterStateAction, exitStateAction)
+            { }
+            public GarpoonPull Puller;
+        }
         private ControllerState CurrentControllerState = WalkStayState;
         private ControllerState CurrentGarpoonState =GarpoonStates.ReadyState;
         private void ChangeControllerState(ControllerState changedState)
@@ -119,14 +84,14 @@ namespace Servant.Control
             CurrentControllerState.ExitStateAction();
             CurrentControllerState = changedState;
             CurrentControllerState.EnterStateAction();
-            ChangeControllerStateEvent();
+            ChangeControllerStateEvent?.Invoke();
         }
         private void ChangeGarpoonState(ControllerState changedState)
         {
             CurrentGarpoonState.ExitStateAction();
             CurrentGarpoonState = changedState;
             CurrentGarpoonState.EnterStateAction();
-            ChangeGarpoonControllerStateEvent();
+            ChangeGarpoonControllerStateEvent?.Invoke();
         }
         private void ResetControllerState()
         {
@@ -142,18 +107,44 @@ namespace Servant.Control
             animator.SetBool(IsJumpAnimName, isJump);
         }
         //Events
-        public event Action StartMovingEvent = Registry.EmptyMethod;
-        public event Action StopMovingEvent= Registry.EmptyMethod;
-        public event Action SetRunModeEvent = Registry.EmptyMethod;
-        public event Action SetWalkModeEvent = Registry.EmptyMethod;
-        public event Action ChangeFiewDirectionEvent = Registry.EmptyMethod;
-        public event Action JumpEvent = Registry.EmptyMethod;
-        public event Action FallingEvent = Registry.EmptyMethod;
-        public event Action LandingEvent = Registry.EmptyMethod;
-        public event Action ChangeControllerStateEvent = Registry.EmptyMethod;
-        public event Action InteractionEvent = Registry.EmptyMethod;
-        public event Action ChangeGarpoonControllerStateEvent = Registry.EmptyMethod;
+        public event Action StartMovingEvent;
+        public event Action StopMovingEvent;
+        public event Action SetRunModeEvent;
+        public event Action SetWalkModeEvent;
+        public event Action ChangeFiewDirectionEvent;
+        public event Action JumpEvent;
+        public event Action FallingEvent;
+        public event Action LandingEvent;
+        public event Action ChangeControllerStateEvent;
+        public event Action InteractionEvent;
+        public event Action ChangeGarpoonControllerStateEvent;
         //Moving
+        private Vector2 MoveDirection = Vector2.right;
+        private bool isMove = false;
+        public bool IsMove_
+        {
+            get => isMove;
+            private set
+            {
+                SetDuoEventedBoolean(ref isMove, MoveBooleanName,
+                () => StartMovingEvent?.Invoke(),
+                () => StopMovingEvent?.Invoke(), value);
+            }
+        }
+        private bool isLeftSide = false;
+        public bool IsLeftSide_
+        {
+            get => isLeftSide;
+            private set
+            {
+                if (isLeftSide != value)
+                {
+                    isLeftSide = !isLeftSide;
+                    spriteRenderer.flipX = isLeftSide;
+                    ChangeFiewDirectionEvent?.Invoke();
+                }
+            }
+        }
         private void SmoothMove(float speed)
         {
             rigidbody.velocity =  MoveDirection * speed / Time.deltaTime;
@@ -170,13 +161,24 @@ namespace Servant.Control
         private void Jump()
         {
             rigidbody.AddForce( Vector2.up * Registry.MainCharacterJumpForce, ForceMode2D.Impulse);
-            JumpEvent();
+            JumpEvent?.Invoke();
         }
         private void StopMove()
         {
             rigidbody.velocity = Vector2.zero;
         }
         //Falling
+        private bool isFall = false;
+        private bool IsFall_
+        {
+            get => isFall;
+            set
+            {
+                SetDuoEventedBoolean(ref isFall, FallBooleanName,
+                () => FallingEvent?.Invoke(),
+                () => LandingEvent?.Invoke(), value);
+            }
+        }
         public void StartFalling() => IsFall_ = true;
         //Physics
         float DefaultGravity;
@@ -189,12 +191,13 @@ namespace Servant.Control
             rigidbody.velocity = Vector2.zero;
         }
         //Interaction
+        private IInteractiveObject InteractiveTarget;
         private void Interact()
         {
             if (InteractiveTarget != null)
             {
                 InteractiveTarget.Interact();
-                InteractionEvent();
+                InteractionEvent?.Invoke();
             }
         }
         /// <summary>
@@ -235,32 +238,6 @@ namespace Servant.Control
             CurrentControllerState.UpdateAction();
             CurrentGarpoonState.UpdateAction();
         }
-        private void Awake()
-        {
-            if (Registry.CharacterController != null &&
-                Registry.CharacterController != this)
-            {
-                Destroy(this);
-                throw ServantException.GetSingltoneException("CharacterController");
-            }
-            else
-            {
-                Registry.CharacterController = this;
-                if (rigidbody == null) rigidbody = GetComponent<Rigidbody2D>();
-                if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
-                if (animator == null) animator = GetComponent<Animator>();
-                if (groundChecker == null) groundChecker = GetComponentInChildren<GroundChecker>();
-            }
-            if (rigidbody==null)throw ServantException.NullInitialization("rigidbody");
-            if(spriteRenderer==null) throw ServantException.NullInitialization("spriteRenderer");
-            if (animator == null) throw ServantException.NullInitialization("animator");
-            if (groundChecker == null) throw ServantException.NullInitialization("groundChecker");
-            FallingEvent +=()=>CurrentControllerState.FallAction();
-            LandingEvent += () => CurrentControllerState.LandAction();
-            FallingEvent += () => CurrentGarpoonState.FallAction();
-            LandingEvent += () => CurrentGarpoonState.LandAction();
-            DefaultGravity = rigidbody.gravityScale;
-        }
         private void Start()
         {
             ResetControllerState();
@@ -273,35 +250,13 @@ namespace Servant.Control
         {
             if (IsFall_&&!groundChecker.IsFreeStanding()) IsFall_ = false;
         }
-        //Serialization 
-        /*
-         * Position,
-         * IsLeftSide
-         */
-        public override string Serialize()
-        {
-            return this.GetSerializedId() + LocationSerializationData.SeparateSym +
-                transform.position.SerializeVector2() + LocationSerializationData.SeparateSym +
-                IsLeftSide_ + LocationSerializationData.SeparateSym;
-        }
-        public override void Deserialize(string serializedObject, int dataStart)
-        {
-            transform.position =LocationSerializationData.DeserializeVector2
-                (LocationSerializationData.GetSubData(serializedObject, dataStart,out dataStart, 2));
-            if (!bool.TryParse(LocationSerializationData.GetSubData(serializedObject, dataStart + 1,
-                out dataStart), out bool isLeft)) throw ServantException.SerializationException();
-            else
-            {
-                IsLeftSide_ = isLeft;
-            }
-        }
-        public override void OnStartLocationLoad()
-        {
-            rigidbody.isKinematic = true;
-        }
-        public override void OnEndLocationLoad()
+        private void OnEnable()
         {
             rigidbody.isKinematic = false;
+        }
+        private void OnDisable()
+        {
+            rigidbody.isKinematic = true;
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -7,6 +8,7 @@ namespace Servant.Control
     public sealed partial class MainCharacterController
     {
         static MainCharacterController Controller => Registry.CharacterController;
+        private static readonly Action EmptyAction=()=> { };
         //InputsNames
         private const string Input_Interaction = "Interaction";
         private const string Input_Jump = "Jump";
@@ -23,6 +25,10 @@ namespace Servant.Control
         { FallMoveAction(); Interaction(); }
         private static void RockingUpdateAction()
         { RockingMoveAction();Interaction(); }
+        private static void PullUpdateAction()
+        {
+            Interaction(); 
+        }
         //Interaction
         private static void Interaction()
         {
@@ -136,6 +142,12 @@ namespace Servant.Control
             RockingState.RopeJoint = Controller.gameObject.AddComponent<DistanceJoint2D>();
             RockingState.RopeJoint.connectedBody = Controller.Projectile.GetComponent<Rigidbody2D>();
         }
+        private static void EnterPullStateAction()
+        {
+            Controller.ResetVelocity();
+            Controller.TurnGravity(false);
+            Controller.IsFall_ = true;
+        }
         //ExitStateAction
         private static void ExitJumpStateAction()
         {
@@ -146,32 +158,36 @@ namespace Servant.Control
         {
             Destroy(RockingState.RopeJoint);
         }
+        private static void ExitPullStateAction()
+        {
+            Controller.TurnGravity(true);
+        }
 
         private static readonly ControllerState WalkStayState =new ControllerState
             (StateName.WalkStayState,
              UpdateAction: WalkStayUpdateAction,
-             LandAction: Registry.EmptyMethod,
+             LandAction: EmptyAction,
              FallAction: FallAction,
              EnterStateAction: EnterWalkStayState,
-             ExitStateAction: Registry.EmptyMethod);
+             ExitStateAction: EmptyAction);
         private static readonly ControllerState WalkState =new ControllerState
             (StateName.WalkState,
              UpdateAction: WalkMoveUpdateAction,
-             LandAction: Registry.EmptyMethod,
+             LandAction: EmptyAction,
              FallAction: FallAction,
              EnterStateAction:EnterWalkState,
-             ExitStateAction: Registry.EmptyMethod);
+             ExitStateAction: EmptyAction);
         private static readonly ControllerState FallState = new ControllerState
             (StateName.FallState,
              UpdateAction: FallUpdateAction,
              LandAction: FallLandAction,
-             FallAction: Registry.EmptyMethod,
-             EnterStateAction: Registry.EmptyMethod,
-             ExitStateAction: Registry.EmptyMethod);
+             FallAction: EmptyAction,
+             EnterStateAction: EmptyAction,
+             ExitStateAction: EmptyAction);
         private static readonly TempleControllerState JumpState = new TempleControllerState
             (StateName.JumpState,
             updateAction: FallUpdateAction,
-            landAction: Registry.EmptyMethod,
+            landAction: EmptyAction,
             fallAction: FallAction,
             enterStateAction: EnterJumpStateAction,
              exitStateAction: ExitJumpStateAction);
@@ -179,16 +195,23 @@ namespace Servant.Control
             (StateName.RockingState,
              updateAction: RockingUpdateAction,
              landAction: FallLandAction,
-             fallAction: Registry.EmptyMethod,
+             fallAction: EmptyAction,
              enterStateAction: EnterRockingStateAction,
              exitStateAction: ExitRockingStateAction);
+        private static readonly ControllerState PullState =new ControllerState
+            (StateName.PullState,
+             UpdateAction: PullUpdateAction,
+             LandAction: EmptyAction,
+             FallAction: EmptyAction,
+             EnterStateAction: EnterPullStateAction,
+             ExitStateAction: ExitPullStateAction);
         private static readonly ControllerState NoneState = new ControllerState
                 (StateName.NoneState,
-                UpdateAction: Registry.EmptyMethod,
-                LandAction: Registry.EmptyMethod,
-                FallAction: Registry.EmptyMethod,
-                EnterStateAction: Registry.EmptyMethod,
-                ExitStateAction: Registry.EmptyMethod);
+                UpdateAction: EmptyAction,
+                LandAction: EmptyAction,
+                FallAction: EmptyAction,
+                EnterStateAction: EmptyAction,
+                ExitStateAction: EmptyAction);
         public enum StateName
         {
             WalkStayState,
@@ -196,6 +219,7 @@ namespace Servant.Control
             FallState,
             JumpState,
             RockingState,
+            PullState,
             NoneState,
             Garpoon_ReadyState,
             Garpoon_ShootState,

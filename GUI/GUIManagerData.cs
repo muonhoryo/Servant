@@ -8,5 +8,7 @@ namespace Servant.GUI
     public sealed class GUIManagerData : ScriptableObject
     {
         public GameObject TempleTextPrefab;
+        public GameObject LoadingScreenPrefab;
+        public GameObject ResetLocationScreenPrefab;
     }
 }

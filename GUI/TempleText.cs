@@ -21,7 +21,7 @@ namespace Servant.GUI
         }
         private void Start()
         {
-            if (text == null) throw ServantException.NullInitialization("text");
+            if (text == null) throw ServantException.GetNullInitialization("text");
         }
     }
 }

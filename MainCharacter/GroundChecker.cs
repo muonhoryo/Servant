@@ -1,5 +1,6 @@
 ﻿
 using UnityEngine;
+using MuonhoryoLibrary;
 
 namespace Servant.Control
 {
@@ -7,14 +8,11 @@ namespace Servant.Control
     {
         public uint CollisionCount { get; private set; } = 0;
         private MainCharacterController owner;
-        private new CircleCollider2D collider;
         private float PrevHeight=0;
         private void Awake()
         {
             if (owner == null) owner = GetComponentInParent<MainCharacterController>();
-            if (collider == null) collider = GetComponent<CircleCollider2D>();
-            if (owner == null) throw ServantException.NullInitialization("owner");
-            if (collider == null) throw ServantException.NullInitialization("collider");
+            if (owner == null) throw ServantException.GetNullInitialization("owner");
         }
         private void Start()
         {
@@ -25,11 +23,11 @@ namespace Servant.Control
         }
         private void OnTriggerEnter2D(Collider2D collider)
         {
-            if (collider.gameObject.layer==Registry.GroundLayer) CollisionCount++;
+            if (collider.gameObject.layer.IsInLayerMask(Registry.GroundLayerMask)) CollisionCount++;
         }
         private void OnTriggerExit2D(Collider2D collider)
         {
-            if (collider.gameObject.layer == Registry.GroundLayer)
+            if (collider.gameObject.layer.IsInLayerMask(Registry.GroundLayerMask))
             {
                 if (CollisionCount == 0) throw new ServantException("Collision calculating error.");
                 CollisionCount--;
