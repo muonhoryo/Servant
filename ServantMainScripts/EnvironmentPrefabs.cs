@@ -1,35 +1,38 @@
 ﻿
+using MuonhoryoLibrary;
 using System.ComponentModel;
 using UnityEngine;
-using MuonhoryoLibrary;
 
 namespace Servant.Serialization
 {
     public sealed class EnvironmentPrefabs:MonoBehaviour,ISingltone<EnvironmentPrefabs>
     {
-        public static GameObject MainCharacterPrefab => instance_.MainCharacterPrefab_;
-        public static GameObject NonePassablePlatform => instance_.NonePassablePlatform_;
-        public static GameObject SimpleLocationTransit => instance_.SimpleLocationTransit_;
-        public static GameObject FAKELocationTransit => instance_.FAKELocationTransit_;
-        public static GameObject Wall => instance_.Wall_;
-        public static GameObject MovableBox => instance_.MovableBox_;
+        public static GameObject HumanCharacterPrefab_ => instance_.MainCharacterPrefab;
+        public static GameObject NonePassablePlatform_ => instance_.NonePassablePlatform;
+        public static GameObject SimpleLocationTransit_ => instance_.SimpleLocationTransit;
+        public static GameObject FAKELocationTransit_ => instance_.FAKELocationTransit;
+        public static GameObject Wall_ => instance_.Wall;
+        public static GameObject MovableBox_ => instance_.MovableBox;
         public static GameObject SaveInfoContainer_ => instance_.SaveInfoContainer;
         public static GameObject CheckPoint_ => instance_.CheckPoint;
         public static GameObject StartButton_ => instance_.StartButton;
         public static GameObject LoadGameButton_ => instance_.LoadGameButton;
+        public static GameObject ClinePlatform_ => instance_.ClinePlatform;
+        public static GameObject RadialRockingPoint_ => instance_.RadialRockingPoint;
+        public static GameObject DeathArea_ => instance_.DeathArea;
 
         [SerializeField]
-        private GameObject MainCharacterPrefab_;
+        private GameObject MainCharacterPrefab;
         [SerializeField]
-        private GameObject NonePassablePlatform_;
+        private GameObject NonePassablePlatform;
         [SerializeField]
-        private GameObject SimpleLocationTransit_;
+        private GameObject SimpleLocationTransit;
         [SerializeField]
-        private GameObject FAKELocationTransit_;
+        private GameObject FAKELocationTransit;
         [SerializeField]
-        private GameObject Wall_;
+        private GameObject Wall;
         [SerializeField]
-        private GameObject MovableBox_;
+        private GameObject MovableBox;
         [SerializeField]
         private GameObject SaveInfoContainer;
         [SerializeField]
@@ -38,6 +41,12 @@ namespace Servant.Serialization
         private GameObject StartButton;
         [SerializeField]
         private GameObject LoadGameButton;
+        [SerializeField]
+        private GameObject ClinePlatform;
+        [SerializeField]
+        private GameObject RadialRockingPoint;
+        [SerializeField]
+        private GameObject DeathArea;
 
         public static EnvironmentPrefabs instance_
         {
@@ -51,9 +60,11 @@ namespace Servant.Serialization
         }
         private static EnvironmentPrefabs instance;
         EnvironmentPrefabs ISingltone<EnvironmentPrefabs>.Singltone { get => instance; set => instance = value; }
+        void ISingltone<EnvironmentPrefabs>.Destroy() =>
+            Destroy(this);
         public void Awake()
         {
-            Singltone.Initialization(this, () => Destroy(this), () => { });
+            this.ValidateSingltone();
         }
         public void OnDestroy()
         {

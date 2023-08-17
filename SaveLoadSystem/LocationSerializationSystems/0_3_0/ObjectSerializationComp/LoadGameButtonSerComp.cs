@@ -52,7 +52,7 @@ namespace Servant.Serialization._0_3_0
         [SerializeField]
         private Vector2 Position;
         public Vector2 Position_ => Position;
-        public int SerializationId => 9;
+        public int SerializationId_ => 9;
 
         public object Clone() => new LoadGameButtonSerData_0_3_0(Position);
         public string ToJson() => JsonUtility.ToJson(this);

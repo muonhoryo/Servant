@@ -56,7 +56,7 @@ namespace Servant.Serialization._0_3_0
         public Vector2 TextShowingOffset_ => TextShowingOffset;
         public float ShowTime_ => ShowTime;
         public Vector2 Position_ => Position;
-        int ISerializableObjectData.SerializationId => 3;
+        int ISerializableObjectData.SerializationId_ => 3;
         private bool TryInitFromJson(string json)
         {
             ShowedText = default;
@@ -81,7 +81,7 @@ namespace Servant.Serialization._0_3_0
         public string ToJson() => JsonUtility.ToJson(this);
         void ISerializableObjectData.InstantiateObject()
         {
-            this.InstanceAndInitialize< FAKELocationTransitSerComp>(EnvironmentPrefabs.FAKELocationTransit);
+            this.InstanceAndInitialize< FAKELocationTransitSerComp>(EnvironmentPrefabs.FAKELocationTransit_);
         }
         bool ISerializableData.TryInitFromJson(string json) => TryInitFromJson(json);
     }

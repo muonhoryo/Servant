@@ -14,45 +14,42 @@ namespace Servant.Serialization
             public LocationSettings_0_3_0(string LevelName, Rect CameraMoveLimit,
                 Rect CameraMoveTrigger)
             {
-                LevelName_ = LevelName;
-                CameraMoveLimit_ = CameraMoveLimit;
-                CameraMoveTrigger_ = CameraMoveTrigger;
+                this.LevelName = LevelName;
+                this.CameraMoveLimit = CameraMoveLimit;
+                this.CameraMoveTrigger = CameraMoveTrigger;
             }
             public LocationSettings_0_3_0(string json)
             {
                 TryInitFromJson(json);
             }
-            public string LevelName { get => LevelName_; set => LevelName_ = value; }
-            public Rect CameraMoveLimit { get => CameraMoveLimit_; set => CameraMoveLimit_ = value; }
-            public Rect CameraMoveTrigger { get => CameraMoveTrigger_; set => CameraMoveTrigger_ = value; }
-            public BuildVersion Version => BuildVersion.v0_3_0;
             [SerializeField]
-            private string LevelName_;
+            protected string LevelName;
             [SerializeField]
-            private Rect CameraMoveLimit_;
+            protected Rect CameraMoveLimit;
             [SerializeField]
-            private Rect CameraMoveTrigger_;
+            protected Rect CameraMoveTrigger;
+            public string LevelName_ => LevelName;
+            public Rect CameraMoveLimit_ => CameraMoveLimit;
+            public Rect CameraMoveTrigger_ => CameraMoveTrigger;
+            public virtual BuildVersion Version_ => BuildVersion.v0_3_0;
+
             public void Apply()
             {
-                if (Registry.CharacterController!=null)
+                void SetCharCtrlState()
                 {
-                    void SetCharCtrlState()
-                    {
-                        MainCameraBehavior.singltone.SetCharCtrlState(Registry.CharacterController.transform,
-                            CameraMoveLimit, CameraMoveTrigger);
-                    }
-                    AutoResetEvent handler=new AutoResetEvent(false);
-                    Registry.ThreadManager.AddActionsQueue(SetCharCtrlState,handler);
-                    handler.WaitOne();
+                    SetCameraMode();
                 }
+                AutoResetEvent handler = new AutoResetEvent(false);
+                Registry.ThreadManager.AddActionsQueue(SetCharCtrlState, handler);
+                handler.WaitOne();
             }
             public string ToJson()
             {
                 return JsonUtility.ToJson(this);
             }
-            public bool TryInitFromJson(string json)
+            public virtual bool TryInitFromJson(string json)
             {
-                LevelName_ = default;
+                LevelName = default;
                 CameraMoveLimit = default;
                 CameraMoveTrigger = default;
                 try
@@ -65,9 +62,13 @@ namespace Servant.Serialization
                 }
                 return true;
             }
-            public object Clone()
+            public virtual object Clone()
             {
-                return new LocationSettings_0_3_0(LevelName_, CameraMoveLimit_, CameraMoveTrigger_);
+                return new LocationSettings_0_3_0(LevelName, CameraMoveLimit, CameraMoveTrigger);
+            }
+            protected virtual void SetCameraMode()
+            {
+                MainCameraBehaviour.singltone.SetCameraMode_Default();
             }
         }
     }

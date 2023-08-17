@@ -10,12 +10,12 @@ namespace Servant.Serialization
 {
     public static partial class SaveLoadSystem
     {
-        public static event Action InitializeLocationUnloadingEvent;
-        public static event Action StartLocationUnloadingEvent;
-        public static event Action EndLocationUnloadingEvent;
-        public static event Action StartLocationLoadingEvent;
-        public static event Action<IEnumerable<ISerializableObjectData>> GettingDeserializedDataEvent;
-        public static event Action EndLocationLoadingEvent;
+        public static event Action InitializeLocationUnloadingEvent=delegate { };
+        public static event Action StartLocationUnloadingEvent=delegate { };
+        public static event Action EndLocationUnloadingEvent=delegate { };
+        public static event Action StartLocationLoadingEvent=delegate { };
+        public static event Action<IEnumerable<ISerializableObjectData>> GettingDeserializedDataEvent=delegate { };
+        public static event Action EndLocationLoadingEvent=delegate { };
         private static class LocationLoadingSystem
         {
             public static void LoadLocation(string locationFilePath, GameObject loadingScreenPrefab)
@@ -50,11 +50,11 @@ namespace Servant.Serialization
                     RunAsyncAndWait(ApplySettings);
                 }
                 protected override void InitializeAction() =>
-                    InitializeLocationUnloadingEvent?.Invoke();
+                    InitializeLocationUnloadingEvent();
                 protected override void StartAction() =>
-                    StartLocationUnloadingEvent?.Invoke();
+                    StartLocationUnloadingEvent();
                 protected override void EndAction() =>
-                    EndLocationLoadingEvent?.Invoke();
+                    EndLocationLoadingEvent();
                 //Async methods
                 private void DestroyCurrentObjects()
                 {
@@ -70,27 +70,20 @@ namespace Servant.Serialization
                     Serializator = LocationSerializationSystem.DeserializeData(FilePath);
                     Handler.Set();
                 }
-                private void ExecuteGettingDataEvent() 
-                {
-                    if (GettingDeserializedDataEvent != null)
-                    {
-                        DelegateEventExecutingToTM(() => 
-                        { GettingDeserializedDataEvent(Serializator.DeserializedObjData); });
-                    }
-                    else
-                        Handler.Set();
-                } 
+                private void ExecuteGettingDataEvent()=>
+                    DelegateEventExecutingToTM(() =>
+                    { GettingDeserializedDataEvent(Serializator.DeserializedObjData_); });
                 private void InstantiateObjects()
                 {
                     IEnumerable<Action> actionQueve =
-                        Serializator.DeserializedObjData.Select<ISerializableObjectData, Action>
+                        Serializator.DeserializedObjData_.Select<ISerializableObjectData, Action>
                         (data => () => data.InstantiateObject());
                     Registry.ThreadManager.AddActionsQueue(actionQueve, Handler);
                 }
                 private void ApplySettings()
                 {
-                    Serializator.DeserializedSettings.Apply();
-                    Registry.SettingsOfCurrentLocation = Serializator.DeserializedSettings;
+                    Serializator.DeserializedSettings_.Apply();
+                    Registry.SettingsOfCurrentLocation = Serializator.DeserializedSettings_;
                     Handler.Set();
                 }
             }

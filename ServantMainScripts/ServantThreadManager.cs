@@ -18,26 +18,13 @@ namespace Servant
         ServantThreadManager ISingltone<ServantThreadManager>.Singltone
         { get => Registry.ThreadManager;
             set => Registry.ThreadManager = value; }
+        void ISingltone<ServantThreadManager>.Destroy() =>
+            Destroy(this);
+
         private void Awake()
         {
             this.ValidateSingltone();
             if (MaxFrameTime <= 0) throw new ServantException("MaxFrameTime assigned at wrong value.");
-        }
-        public short AddActionsQueue(Action mainThreadAction,Action onEndAction)
-        {
-            return AddActionsQueue(new Action[1] { mainThreadAction }, onEndAction);
-        }
-        public short AddActionsQueue(Action mainThreadAction,AutoResetEvent handler)
-        {
-            return AddActionsQueue(mainThreadAction, () => handler.Set());
-        }
-        public short AddActionsQueue(Action mainThreadAction)
-        {
-            return AddActionsQueue(mainThreadAction, () => { });
-        }
-        public short AddActionsQueue(IEnumerable<Action> mainThreadActions,AutoResetEvent handler)
-        {
-            return AddActionsQueue(mainThreadActions, () => handler.Set());
         }
     }
     public abstract class AsyncFacade

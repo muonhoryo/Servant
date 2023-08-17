@@ -6,19 +6,18 @@ using System;
 using System.Linq;
 using UnityEngine;
 using Servant.GUI;
-using System.Security.Cryptography;
 
 namespace Servant.Serialization
 {
     public static partial class SaveLoadSystem
     {
-        public static event Action InitializeGameSavingEvent;
-        public static event Action StartGameSavingEvent;
-        public static event Action EndGameSavingEvent;
+        public static event Action InitializeGameSavingEvent=delegate { };
+        public static event Action StartGameSavingEvent=delegate { };
+        public static event Action EndGameSavingEvent=delegate { };
 
-        public static event Action InitializeLocationResetingEvent;
-        public static event Action StartLocationResetingEvent;
-        public static event Action EndLocationResetingEvent;
+        public static event Action InitializeLocationResetingEvent=delegate { };
+        public static event Action StartLocationResetingEvent=delegate { };
+        public static event Action EndLocationResetingEvent=delegate { };
         private static class CheckPointSystem
         {
             public static void SaveGame(ILocationSettings settings,string fileName)
@@ -69,11 +68,11 @@ namespace Servant.Serialization
                     LocationSerializationSystem.SerializeGameSave(Settings, ObjInSceneData, FileName);
                 }
                 protected override void InitializeAction() =>
-                    InitializeGameSavingEvent?.Invoke();
+                    InitializeGameSavingEvent();
                 protected override void StartAction() =>
-                    StartGameSavingEvent?.Invoke();
+                    StartGameSavingEvent();
                 protected override void EndAction() =>
-                    EndGameSavingEvent?.Invoke();
+                    EndGameSavingEvent();
             }
             private sealed class LocationAsyncReseter:LoadingAsyncFacade
             {
@@ -97,11 +96,11 @@ namespace Servant.Serialization
                 }
 
                 protected override void InitializeAction() =>
-                    InitializeLocationResetingEvent?.Invoke();
+                    InitializeLocationResetingEvent();
                 protected override void StartAction() =>
-                    StartLocationResetingEvent?.Invoke();
+                    StartLocationResetingEvent();
                 protected override void EndAction() =>
-                    EndLocationResetingEvent?.Invoke();
+                    EndLocationResetingEvent();
             }
         }
     }

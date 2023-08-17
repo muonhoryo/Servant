@@ -7,10 +7,10 @@ namespace Servant.InteractionObjects
 {
     public sealed partial class CheckPoint : DefaultInteractiveObject
     {
-        public bool IsWasActivated { get; private set; } = false;
+        public bool IsWasActivated_ { get; private set; } = false;
         protected override void Interact()
         {
-            IsWasActivated = true;
+            IsWasActivated_ = true;
             IsActive_ = false;
             SaveLoadSystem.SaveGame(Registry.SettingsOfCurrentLocation,MainMenuControl.SavedGameName);
         }

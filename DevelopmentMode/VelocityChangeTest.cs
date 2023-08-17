@@ -10,6 +10,9 @@ namespace Servant.DevelopmentOnly
         private static VelocityChangeTest singltone;
         VelocityChangeTest ISingltone<VelocityChangeTest>.Singltone
         { get => singltone; set => singltone = value; }
+        void ISingltone<VelocityChangeTest>.Destroy() =>
+            Destroy(this);
+
         private void OnValidate()
         {
             this.ValidateSingltone();

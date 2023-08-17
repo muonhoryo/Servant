@@ -69,7 +69,7 @@ namespace Servant.Serialization._0_3_0
             return true;
         }
 
-        public int SerializationId => 2;
+        public int SerializationId_ => 2;
         public object Clone()
         {
             return new SimpleLocationTransitData_0_3_0(Position, NextMainCharacterPos, NextLocationName);
@@ -81,7 +81,7 @@ namespace Servant.Serialization._0_3_0
 
         void ISerializableObjectData.InstantiateObject()
         {
-            this.InstanceAndInitialize<SimpleLocationTransitSerComp>(EnvironmentPrefabs.SimpleLocationTransit);
+            this.InstanceAndInitialize<SimpleLocationTransitSerComp>(EnvironmentPrefabs.SimpleLocationTransit_);
         }
         bool ISerializableData.TryInitFromJson(string json) => TryInitFromJson(json);
     }

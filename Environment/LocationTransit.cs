@@ -22,7 +22,7 @@ namespace Servant.InteractionObjects
         }
         private void SetMainCharacterPosOnLoad()
         {
-            Registry.CharacterController.transform.position = TransitInfo.NextMainCharacterPos_;
+            Registry.CharacterController_.transform.position = TransitInfo.NextMainCharacterPos_;
             SaveLoadSystem.EndLocationLoadingEvent -= SetMainCharacterPosOnLoad;
         }
         public void SetData(ILocationTransitInfo data) => TransitInfo = data;

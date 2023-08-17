@@ -22,11 +22,11 @@ namespace Servant.Serialization._0_3_0
         public WallSerializationData_0_3_0() { }
         public WallSerializationData_0_3_0(Vector2 Position) : base(Position) { }
         public WallSerializationData_0_3_0(string json) : base(json) { }
-        public override int SerializationID => 4;
+        public override int SerializationID_ => 4;
         public override object Clone() => new WallSerializationData_0_3_0(Position_);
         protected override void InstantiateObject()
         {
-            this.InstanceAndInitialize<WallSerComp>(EnvironmentPrefabs.Wall);
+            this.InstanceAndInitialize<WallSerComp>(EnvironmentPrefabs.Wall_);
         }
     }
 }

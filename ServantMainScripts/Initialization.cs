@@ -18,12 +18,13 @@ namespace Servant
             get => singltone;
             set => singltone = value;
         }
+        void ISingltone<Initialization>.Destroy() =>
+            Destroy(this);
+
         [SerializeField]
         private GameObject GUICanvas;
         [SerializeField]
         private GUIManagerData GUIData;
-        [SerializeField]
-        private GameObject GarpoonBasePrefab;
         [SerializeField]
         private string MenuSaveName;
         private void Awake()
@@ -31,10 +32,8 @@ namespace Servant
             this.ValidateSingltone();
             if (GUICanvas == null) throw ServantException.GetNullInitialization("GUICanvas");
             if (GUIData == null) throw ServantException.GetNullInitialization("GUIData");
-            if (GarpoonBasePrefab == null) throw ServantException.GetNullInitialization("GarpoonBasePrefab");
             GUIManager.GUICanvas = GUICanvas;
             GUIManager.Data = GUIData;
-            MainCharacterController.GarpoonBasePrefab = GarpoonBasePrefab;
         }
         private void Start()
         {

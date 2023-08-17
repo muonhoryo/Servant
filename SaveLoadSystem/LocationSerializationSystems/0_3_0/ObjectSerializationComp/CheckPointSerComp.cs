@@ -12,14 +12,14 @@ namespace Servant.InteractionObjects
     {
         public ISerializableObjectData GetDataOfCurrentState() => GetSerializationData();
         public ISerializableObjectData GetSerializationData() =>
-            new CheckPointSerData_0_3_0(transform.position, IsWasActivated);
+            new CheckPointSerData_0_3_0(transform.position, IsWasActivated_);
 
         void ISerializableObject.Initialize(ISerializableObjectData data)
         {
             this.ValidateInputAndInitialize(data, objData =>
             {
                 transform.position = objData.Position_;
-                IsWasActivated = objData.IsWasActivated_;
+                IsWasActivated_ = objData.IsWasActivated_;
             });
         }
         void ISerializableObject.OnEndLocationLoad() { }
@@ -47,7 +47,7 @@ namespace Servant.Serialization._0_3_0
         private bool IsWasActivated;
         public Vector2 Position_ => Position;
         public bool IsWasActivated_ => IsWasActivated;
-        public int SerializationId => 7;
+        public int SerializationId_ => 7;
 
         public object Clone() => new CheckPointSerData_0_3_0(Position,IsWasActivated);
         public string ToJson() => JsonUtility.ToJson(this);

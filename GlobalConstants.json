@@ -1,0 +1,17 @@
+{
+    "HumanCharacters_RunSpeed": 3.0,
+    "HumanCharacters_JumpForce": 170.0,
+    "HumanCharacters_JumpDelay": 0.20000000298023225,
+    "HumanCharacters_AirMovingSpeedModifier": 70.0,
+    "HumanCharacters_RockingMoveSpeed": 210.0,
+    "HumanCharacters_DodgingSpeedMinBuff": 4.0,
+    "HumanCharacters_DodgingSpeedDescentStep": 0.15000000596046449,
+    "HumanCharacters_LandingDiagonalRollSpeedModifier": 1.0,
+    "HumanCharacters_LandingRollMinForce": 100.0,
+    "HumanCharacters_WallDetectionMinCos": 0.8999999761581421,
+    "HumanCharacters_GroundDetectionMinCos": 0.20000000298023225,
+    "HumanCharacters_GroundForceDodgeMinAngle": 50.0,
+    "HTK_ProjectileMaxDistance": 4.0,
+    "Garpoon_CollisionForceDirectionToStopPull": 0.10000000149011612,
+    "Garpoon_PullDoneThreshold": 0.10000000149011612
+}

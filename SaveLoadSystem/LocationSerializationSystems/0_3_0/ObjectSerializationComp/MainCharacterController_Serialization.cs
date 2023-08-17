@@ -8,48 +8,15 @@ using Servant.Serialization._0_3_0;
 using static Servant.Serialization.SaveLoadSystem;
 using Servant.Serialization;
 
-namespace Servant.Control
+namespace Servant.Characters
 {
-    public sealed partial class MainCharacterController :  ISerializableObject<MainCharacterData_0_3_0>,
-        ISingltone<MainCharacterController>, IResetedEnvinronment
+    public sealed partial class HumanCharacter :  ISerializableObject<MainCharacterData_0_3_0>, IResetedEnvinronment
     {
         private MainCharacterData_0_3_0 serializationData;
-        private bool IsInitialized = false;
         private void InitializeFromAvailibleData()
         {
-            transform.position = serializationData.Position;
-            isLeftSide = serializationData.IsLeftSide;
-            Awake();
-        }
-        private void Awake()
-        {
-            if (!IsInitialized)
-            {
-                if (Registry.CharacterController != null &&
-                    Registry.CharacterController != this)
-                {
-                    Destroy(Registry.CharacterController);
-                }
-                Registry.CharacterController = this;
-
-                if (rigidbody == null) rigidbody = GetComponent<Rigidbody2D>();
-                if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
-                if (animator == null) animator = GetComponent<Animator>();
-                if (groundChecker == null) groundChecker = GetComponentInChildren<GroundChecker>();
-
-
-                if (rigidbody == null) throw ServantException.GetNullInitialization("rigidbody");
-                if (spriteRenderer == null) throw ServantException.GetNullInitialization("spriteRenderer");
-                if (animator == null) throw ServantException.GetNullInitialization("animator");
-                if (groundChecker == null) throw ServantException.GetNullInitialization("groundChecker");
-
-
-                FallingEvent += () => CurrentControllerState.FallAction();
-                LandingEvent += () => CurrentControllerState.LandAction();
-                FallingEvent += () => CurrentGarpoonState.FallAction();
-                LandingEvent += () => CurrentGarpoonState.LandAction();
-                DefaultGravity = rigidbody.gravityScale;
-            }
+            transform.position = serializationData.Position_;
+            IsLeftSide_ = serializationData.IsLeftSide_;
         }
 
 
@@ -64,7 +31,7 @@ namespace Servant.Control
         public ISerializableObjectData GetSerializationData()=>
             serializationData.Clone() as MainCharacterData_0_3_0;
         public ISerializableObjectData GetDataOfCurrentState()=>
-            new MainCharacterData_0_3_0(transform.position, isLeftSide);
+            new MainCharacterData_0_3_0(transform.position, IsLeftSide_);
         void ISerializableObject.OnStartLocationLoad() => enabled = false;
         void ISerializableObject.OnEndLocationLoad() => enabled = true;
 
@@ -73,12 +40,6 @@ namespace Servant.Control
             if (serializationData == null)
                 throw ServantException.GetArgumentNullException("data");
             InitializeFromAvailibleData();
-        }
-
-        MainCharacterController ISingltone<MainCharacterController>.Singltone
-        {
-            get => Registry.CharacterController;
-            set => Registry.CharacterController = value;
         }
     }
 }
@@ -90,28 +51,28 @@ namespace Servant.Serialization._0_3_0
         public MainCharacterData_0_3_0() { }
         public MainCharacterData_0_3_0(Vector2 Position, bool IsLeftSide)
         {
-            Position_ = Position;
-            IsLeftSide_ = IsLeftSide;
+            this.Position = Position;
+            this.IsLeftSide = IsLeftSide;
         }
         public MainCharacterData_0_3_0(string json)
         {
             TryInitFromJson(json);
         }
-        public Vector2 Position { get => Position_; private set => Position_ = value; }
+        public Vector2 Position_ { get => Position; private set => Position = value; }
         [SerializeField]
-        private Vector2 Position_;
-        public bool IsLeftSide { get => IsLeftSide_; private set => IsLeftSide_ = value; }
+        private Vector2 Position;
+        public bool IsLeftSide_ { get => IsLeftSide; private set => IsLeftSide = value; }
         [SerializeField]
-        private bool IsLeftSide_;
+        private bool IsLeftSide;
 
-        public int SerializationId => 0;
+        public int SerializationId_ => 0;
         public object Clone()
         {
-            return new MainCharacterData_0_3_0(Position_, IsLeftSide_);
+            return new MainCharacterData_0_3_0(Position, IsLeftSide);
         }
         public void InstantiateObject()
         {
-            this.InstanceAndInitialize< MainCharacterController>(EnvironmentPrefabs.MainCharacterPrefab);
+            this.InstanceAndInitialize<Characters.HumanCharacter>(EnvironmentPrefabs.HumanCharacterPrefab_);
         }
         public string ToJson()
         {
@@ -119,8 +80,8 @@ namespace Servant.Serialization._0_3_0
         }
         public bool TryInitFromJson(string json)
         {
-            Position_ = default;
-            IsLeftSide = default;
+            Position = default;
+            IsLeftSide_ = default;
             try
             {
                 JsonUtility.FromJsonOverwrite(json, this);

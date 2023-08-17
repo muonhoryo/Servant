@@ -3,36 +3,12 @@ using System;
 using UnityEngine;
 using Servant;
 using static Servant.Serialization.SaveLoadSystem;
+using JetBrains.Annotations;
 
 namespace MuonhoryoLibrary
 {
-    public static class SingltoneExtensions
-    {
-        public static void ValidateSingltone<TSingltoneType>(this TSingltoneType owner)
-            where TSingltoneType :UnityEngine.Object,ISingltone<TSingltoneType>
-        {
-            if (owner.Singltone != null && owner.Singltone != owner)
-            {
-                throw new ServantException("Have more than one examples of singltone.");
-            }
-            else 
-                owner.Singltone = owner;
-        }
-    }
     public static class UnityExtensions
     {
-        public static Vector2 AngleOffset(this Vector2 offset, float degressAngle)
-        {
-            return new Vector2
-                (offset.x * Mathf.Cos(degressAngle * Mathf.PI / 180) -
-                    offset.y * Mathf.Sin(degressAngle * Mathf.PI / 180),
-                offset.y * Mathf.Cos(degressAngle * Mathf.PI / 180) +
-                    offset.x * Mathf.Sin(degressAngle * Mathf.PI / 180));
-        }
-        public static bool IsInLayerMask(this int layer, int layerMask)
-        {
-            return (layerMask & (int)Math.Pow(2, layer)) != 0;
-        }
         public static Vector2 GetBorderlinePoint(this Rect limit, Vector2 point)
         {
             float x = point.x;
@@ -43,8 +19,50 @@ namespace MuonhoryoLibrary
             else if (y > limit.yMax) y = limit.yMax;
             return new Vector2(x, y);
         }
-        public static Vector3 GetEulerAngleOfImage(this Vector3 oldEulerRot, float newImageAngle) =>
-            new Vector3(oldEulerRot.x, oldEulerRot.y, newImageAngle);
+
+        public static int Sign(this int value)
+        {
+            if (value == 0)
+                throw new ServantException("value cannot be zero.");
+            return value > 0 ? 1 : -1;
+        }
+        /// <summary>
+        /// 1 - counter-clockwise, -1 - clokwise
+        /// </summary>
+        /// <param name="normalizedDirToCenter"></param>
+        /// <param name="movingDirection"></param>
+        /// <returns></returns>
+        public static Vector2 GetRadialForceDirection(this Vector2 normalizedDirToCenter, int movingDirection)
+        {
+            Vector2 dir = Vector2.Perpendicular(normalizedDirToCenter);
+            if (movingDirection > 0)
+                dir = -dir;
+            return dir;
+        }
+        public static float RoundTo(this float value,float roundCoef)
+        {
+            return value -= value % roundCoef;
+        }
+    }
+    public static class SingltoneExtensions
+    {
+        /// <summary>
+        /// Destroys any scripts except first initialized.
+        /// </summary>
+        /// <typeparam name="TScript"></typeparam>
+        /// <param name=""></param>
+        public static void InitializeSingltoneWithDeleting<TScript>(this ISingltone<TScript> owner)
+            where TScript : class,ISingltone<TScript>
+        {
+            if (owner.Singltone != null&&owner.Singltone!=owner)
+            {
+                owner.Destroy();
+            }
+            else
+            {
+                owner.Singltone = owner as TScript;
+            }
+        }
     }
 }
 namespace Servant.Serialization 
@@ -88,5 +106,23 @@ namespace Servant.Serialization
                 throw ServantException.GetSerializationException("Wrong type of data. Convert old data to actual version. ");
             initializeAction(input as TSerData);
         }
+    }
+}
+namespace Servant.Characters 
+{
+    public static class CharactersExtensions
+    {
+        public static bool IsInAir(this IGroundCharacter owner)=>
+             owner.CurrentFallingState_ != IGroundCharacter.FallingState.StandingOnGround;
+        public static bool IsFalling(this IGroundCharacter owner) =>
+            owner.CurrentFallingState_ == IGroundCharacter.FallingState.Falling;
+        public static bool IsTheHitObjectGround(this IGarpoonCharacter owner) =>
+            owner.GarpoonBase_.ShootedProjectile_.HitObject_.layer == Registry.GroundLayer;
+        public static bool DoesHookCatch_(this IGarpoonBase owner)=>
+            owner.ShootedProjectile_ != null && owner.ShootedProjectile_.HitObject_ != null;
+        public static bool DidGarpoonShoot(this IGarpoonBase owner) =>
+            owner.ShootedProjectile_ != null;
+        public static bool HasWallsAtMovingDirection(this IGroundCharacter owner, IWallChecker wallChecker) =>
+            owner.MovingDirection_ > 0 ? wallChecker.IsThereRightWall_ : wallChecker.IsThereLeftWall_;
     }
 }

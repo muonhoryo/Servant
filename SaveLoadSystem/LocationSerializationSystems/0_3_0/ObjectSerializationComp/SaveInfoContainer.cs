@@ -13,6 +13,8 @@ namespace Servant.Serialization
         private static SaveInfoContainer instance;
         private bool IsInitialized;
         SaveInfoContainer ISingltone<SaveInfoContainer>.Singltone { get => instance; set => instance=value; }
+        void ISingltone<SaveInfoContainer>.Destroy() =>
+            Destroy(this);
 
         public int VillainLevel { get; private set; }
 
@@ -81,7 +83,7 @@ namespace Servant.Serialization._0_3_0
             }
             return true;
         }
-        public int SerializationId => 6;
+        public int SerializationId_ => 6;
         public object Clone()=> new SaveInfo_0_3_0(VillainLevel);
         public string ToJson()=>JsonUtility.ToJson(this);
 

@@ -1,9 +1,15 @@
 
 using MuonhoryoLibrary;
+using MuonhoryoLibrary.Unity;
+using MuonhoryoLibrary.Collections;
+using Servant.InteractionObjects;
 using Servant.Serialization._0_3_0;
 using System;
+using Unity.IO.LowLevel.Unsafe;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using static Servant.Serialization.SaveLoadSystem;
+using System.Collections;
 
 namespace Servant.InteractionObjects
 {
@@ -79,7 +85,7 @@ namespace Servant.Serialization
         IResetedEnvinronment
         where TSerData:MovableEnvironmentSerData_0_3_0
     {
-        public TSerData Data { get; protected set; }
+        public TSerData Data_ { get; protected set; }
         public abstract ISerializableObjectData GetDataOfCurrentState();
         public abstract ISerializableObjectData GetSerializationData();
 
@@ -97,13 +103,13 @@ namespace Servant.Serialization
         {
             this.ValidateInputAndInitialize(data, objData =>
             {
-                Data = objData;
-                SetTransform(Data);
+                Data_ = objData;
+                SetTransform(Data_);
             });
         }
         void ISerializableObject.OnEndLocationLoad() { }
         void ISerializableObject.OnStartLocationLoad() { }
-        void IResetedEnvinronment.Reset() => SetTransform(Data);
+        void IResetedEnvinronment.Reset() => SetTransform(Data_);
     }
 }
 namespace Servant.Serialization._0_3_0
@@ -124,8 +130,8 @@ namespace Servant.Serialization._0_3_0
         private Vector2 Position;
         public Vector2 Position_ => Position;
 
-        public abstract int SerializationID { get; }
-        int ISerializableObjectData.SerializationId=> SerializationID;
+        public abstract int SerializationID_ { get; }
+        int ISerializableObjectData.SerializationId_=> SerializationID_;
 
         public abstract object Clone();
         public string ToJson() =>
@@ -169,8 +175,8 @@ namespace Servant.Serialization._0_3_0
         public Vector2 Position_ => Position;
         public float Rotation_ => Rotation;
 
-        public abstract int SerializationId { get; }
-        int ISerializableObjectData.SerializationId => SerializationId;
+        public abstract int SerializationId_ { get; }
+        int ISerializableObjectData.SerializationId_ => SerializationId_;
 
         public abstract object Clone();
         public string ToJson() => JsonUtility.ToJson(this);

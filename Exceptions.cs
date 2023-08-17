@@ -40,8 +40,7 @@ namespace Servant
     {
         public ServantCameraException(string message):base(message+ "\nTurn camera to CameraPointState.") 
         {
-            MainCameraBehavior.singltone.SetPointState
-                (MainCameraBehavior.singltone.transform.position);
+            MainCameraBehaviour.singltone.SetCameraMode_Default();
         }
         public static ServantCameraException GetNullTargetException(string additionalInfo = "") =>
             new ServantCameraException("Target does not exist.\n" + additionalInfo);
@@ -50,5 +49,10 @@ namespace Servant
     {
         public ServantRequaringCompDeletingException(string compName)
             : base($"Requaring component {compName} has been destroyed. ") { }
+    }
+    public class ServantIncorrectInputArgument : ServantException
+    {
+        public ServantIncorrectInputArgument(string argumentName, string additionalInfo) :
+            base($"Incorrect input argument {argumentName}. {additionalInfo}"){ } 
     }
 }

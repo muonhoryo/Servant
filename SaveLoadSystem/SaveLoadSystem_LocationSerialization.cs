@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using UnityEditor;
 using UnityEngine;
 using static Servant.Serialization.SaveLoadSystem;
 
@@ -11,6 +10,8 @@ namespace Servant.Serialization
 {
     public static partial class SaveLoadSystem
     {
+        public const string CompanyName = "ServantTeam";
+        public const string ProductName = "Servant";
         public const string ServantSerializationTag = "SerializableObject";
         public const char ObjectHeaderSym = ':';
 
@@ -65,11 +66,11 @@ namespace Servant.Serialization
         private static class LocationSerializationSystem
         {
             public const string LevelSerializationPath = "Assets/Scripts/SaveLoadSystem/SerializedLevels/";
-            public static string GameSaveSerializationPath =>
-                $"AppData/LocalLow/{PlayerSettings.companyName}/{PlayerSettings.productName}/Saves/";
+            public static string GameSaveSerializationPath_ =>
+                $"AppData/LocalLow/{CompanyName}/{ProductName}/Saves/";
             public const string FileType = ".json";
             public const string TemplePostfix = "_tmpl";
-            private static LocationSerializator GetActualSerializator() => new LocationSerializator_0_3_0();
+            private static LocationSerializator GetActualSerializator() => new LocationSerializator_0_4_0();
 
 
 
@@ -82,12 +83,12 @@ namespace Servant.Serialization
             }
             public static void SerializeLevel(ILocationSettings settings,IEnumerable<ISerializableObjectData> dataQueve)
             {
-                Serialize(settings,dataQueve, settings.LevelName, LevelSerializationPath);
+                Serialize(settings,dataQueve, settings.LevelName_, LevelSerializationPath);
             }
             public static void SerializeGameSave(ILocationSettings settings,IEnumerable<ISerializableObjectData> dataQueve,
                 string fileName)
             {
-                Serialize(settings,dataQueve,fileName,GameSaveSerializationPath);
+                Serialize(settings,dataQueve,fileName,GameSaveSerializationPath_);
             }
             public static LocationSerializator DeserializeData(string serializationPath)
             {
@@ -104,13 +105,12 @@ namespace Servant.Serialization
                     if (ver == default)
                         throw ServantException.GetSerializationException("Cannot get info about serialization version. ");
                     LocationSerializator serializator = GetActualSerializator();
-                    if (ver != serializator.Version)
-                        return DeserializeOldVersionData(serializedLocation, ver);
-                    else
+                    if (ver != serializator.Version_)
                     {
-                        serializator.DeserializeDataAndSettings(serializedLocation);
-                        return serializator;
+                        serializator= GetOldVersionSerializator(ver);
                     }
+                    serializator.DeserializeDataAndSettings(serializedLocation);
+                    return serializator;
                 }
             }
             public static LocationSerializator DeserializeLevelData(string fileName)
@@ -119,12 +119,14 @@ namespace Servant.Serialization
             }
             public static LocationSerializator DeserializeGameSaveData(string fileName)
             {
-                return DeserializeData(GetSerializationPath(fileName, GameSaveSerializationPath));
+                return DeserializeData(GetSerializationPath(fileName, GameSaveSerializationPath_));
             }
 
-            private static LocationSerializator DeserializeOldVersionData(IEnumerable<string> serializedLocation,
-                BuildVersion ver)
+            private static LocationSerializator GetOldVersionSerializator(BuildVersion ver)
             {
+                if (ver == BuildVersion.v0_3_0)
+                    return new LocationSerializator_0_3_0();
+
                 throw ServantException.GetSingltoneException($"Cannot deserialize location at {ver} serialization" +
                     $" version. ");
             }
@@ -149,7 +151,7 @@ namespace Servant.Serialization
             }
             public static string GetSavedGameSerPath(string fileName)
             {
-                return GetSerializationPath(fileName, GameSaveSerializationPath);
+                return GetSerializationPath(fileName, GameSaveSerializationPath_);
             }
             public static string GetTempleSerPath(string fileName,string serializationDir)
             {
@@ -189,13 +191,13 @@ namespace Servant.Serialization
         { }
         public interface ISerializableObjectData: ISerializableData
         {
-            public int SerializationId { get; }
+            public int SerializationId_ { get; }
             public void InstantiateObject();
         }
         public interface ILocationSettings: ISerializableData
         {
-            public BuildVersion Version { get; }
-            public string LevelName { get; }
+            public BuildVersion Version_ { get; }
+            public string LevelName_ { get; }
             public void Apply();
         }
         public interface IResetedEnvinronment
@@ -206,21 +208,22 @@ namespace Servant.Serialization
         private abstract class LocationSerializator
         {
             public LocationSerializator() : this(null, null) { }
-            private LocationSerializator(ILocationSettings DeserializedSettings,
+            public LocationSerializator(ILocationSettings DeserializedSettings,
                 ISerializableObjectData[] DeserializedObjData)
             {
-                if (DeserializedSettings!=null&&DeserializedSettings.Version != Version)
+                if (DeserializedSettings!=null&&DeserializedSettings.Version_ != Version_)
                     throw ServantException.GetSerializationException("Invalid settings version. ");
-                this.DeserializedSettings = DeserializedSettings;
-                this.DeserializedObjData = DeserializedObjData;
+
+                DeserializedSettings_ = DeserializedSettings;
+                DeserializedObjData_ = DeserializedObjData;
             }
 
-            public abstract BuildVersion Version { get; }
+            public abstract BuildVersion Version_ { get; }
             protected abstract ILocationSettings GetSettings();
-            protected abstract Func<ISerializableObjectData>[] ObjDataGetters { get; }
+            protected abstract Func<ISerializableObjectData>[] ObjDataGetters_ { get; }
 
-            public ILocationSettings DeserializedSettings { get; protected set; }
-            public ISerializableObjectData[] DeserializedObjData { get; protected set; }
+            public ILocationSettings DeserializedSettings_ { get; protected set; }
+            public ISerializableObjectData[] DeserializedObjData_ { get; protected set; }
 
             public virtual void DeserializeDataAndSettings(IEnumerable<string> serializedLocation)
             {
@@ -230,23 +233,23 @@ namespace Servant.Serialization
                     void AddDataInList(string current)
                     {
                         ObjectData serializedData = new(current);
-                        if (serializedData.id >= ObjDataGetters.Length)
+                        if (serializedData.id >= ObjDataGetters_.Length)
                             throw ServantException.GetSerializationException($"Cant find data at ID={serializedData.id}. ");
-                        list.Add(ObjDataGetters[serializedData.id]());
+                        list.Add(ObjDataGetters_[serializedData.id]());
                         ISerializableObjectData dataContainer = list[list.Count - 1];
                         if (!dataContainer.TryInitFromJson(serializedData.data))
                             throw ServantException.GetSerializationException("Cant deserialize data. ");
                     }
                     enumerator.MoveNext(); //move to version line
                     enumerator.MoveNext(); //move to settings line
-                    DeserializedSettings = GetSettings();
-                    if (!DeserializedSettings.TryInitFromJson(enumerator.Current))
+                    DeserializedSettings_ = GetSettings();
+                    if (!DeserializedSettings_.TryInitFromJson(enumerator.Current))
                         throw ServantException.GetSerializationException("Cant deserialize location settings. ");
                     while (enumerator.MoveNext())
                     {
                         AddDataInList(enumerator.Current);
                     }
-                    DeserializedObjData=list.ToArray();
+                    DeserializedObjData_=list.ToArray();
                 }
             }
             public virtual void Serialize(string serializationPath,string templePath,
@@ -259,10 +262,10 @@ namespace Servant.Serialization
                     writer = new StreamWriter(templePath, false);
                 using (writer)
                 {
-                    writer.WriteLine(JsonUtility.ToJson(Version));
+                    writer.WriteLine(JsonUtility.ToJson(Version_));
                     if (locationSettings == null)
                         throw ServantException.GetSerializationException("Havent location settings. ");
-                    if (locationSettings.Version != Version)
+                    if (locationSettings.Version_ != GetSettings().Version_)
                         throw ServantException.GetSerializationException("None actual location settings." +
                             " Update LocationSerializationManager!!!");
                     writer.WriteLine(locationSettings.ToJson());
@@ -270,7 +273,7 @@ namespace Servant.Serialization
                         throw ServantException.GetSerializationException("Havent objects data to serialize. ");
                     foreach(var data in dataQueve)
                     {
-                        writer.WriteLine($"{data.SerializationId}{ObjectHeaderSym}{data.ToJson()}");
+                        writer.WriteLine($"{data.SerializationId_}{ObjectHeaderSym}{data.ToJson()}");
                     }
                 }
                 File.Copy(templePath, serializationPath, true);
@@ -295,8 +298,9 @@ namespace Servant.Serialization
             }
         }
         private interface ILocationSerilConverter<TOutputType>
+            where TOutputType:LocationSerializator
         {
-            public BuildVersion OutputVersion { get; }
+            public BuildVersion OutputVersion_ { get; }
             public TOutputType Convert();
         }
     }

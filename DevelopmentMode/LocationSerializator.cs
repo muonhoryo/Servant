@@ -8,16 +8,21 @@ namespace Servant.DevelopmentOnly
     {
         [SerializeField]
         private string LocationName;
+        //Camera settings
+        [SerializeField]
+        private float Depth;
         [SerializeField]
         private Rect CameraMoveLimit;
         [SerializeField]
         private Rect CameraMoveTrigger;
+
         [ContextMenu("Serialize")]
         void Serialize()
         {
             SaveLoadSystem.SerializeLocation(GetSettings());
         }
         private SaveLoadSystem.ILocationSettings GetSettings()
-            => new SaveLoadSystem.LocationSettings_0_3_0(LocationName,CameraMoveLimit,CameraMoveTrigger);
+            =>new SaveLoadSystem.LocationSettings_0_4_0(LocationName,Depth,
+                CameraMoveLimit, CameraMoveTrigger);
     }
 }
