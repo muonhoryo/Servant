@@ -21,8 +21,8 @@ namespace Servant
         private float RockingSpeed;
 
         private Vector2 HitPosition;
-        Vector2 IGarpoonBase.IHittableObj.HitPosition_ => HitPosition;
+        Vector2 IGarpoonBase.IGarpoonHittableObj.HitPosition_ => HitPosition;
         int IGarpoonBase.IRadialRockingHookCatcher.RockingDirection_ => RockingDirection;
-        float IGarpoonBase.IRadialRockingHookCatcher.RockingSpeed_ => RockingSpeed;
+        float IGarpoonBase.IRadialRockingHookCatcher.RockingSpeedMultiplier_ => RockingSpeed;
     }
 }

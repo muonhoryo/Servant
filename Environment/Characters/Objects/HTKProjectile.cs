@@ -47,7 +47,7 @@ namespace Servant.Characters
                 {
                     PassedDistance += hit.distance;
                     Vector2 hitPoint;
-                    if (hit.collider.gameObject.TryGetComponent<IGarpoonBase.IHittableObj>(out var hitObj))
+                    if (hit.collider.gameObject.TryGetComponent<IGarpoonBase.IGarpoonHittableObj>(out var hitObj))
                         hitPoint = hitObj.HitPosition_;
                     else
                         hitPoint = hit.point;

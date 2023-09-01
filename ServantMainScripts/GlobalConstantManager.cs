@@ -72,5 +72,6 @@ namespace Servant
         public float HTK_ProjectileMaxDistance;
         public float Garpoon_CollisionForceDirectionToStopPull;
         public float Garpoon_PullDoneThreshold;
+        public float GuardAndroid_MovingSpeed;
     }
 }

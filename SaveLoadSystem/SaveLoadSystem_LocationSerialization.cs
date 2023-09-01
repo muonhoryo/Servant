@@ -70,7 +70,7 @@ namespace Servant.Serialization
                 $"AppData/LocalLow/{CompanyName}/{ProductName}/Saves/";
             public const string FileType = ".json";
             public const string TemplePostfix = "_tmpl";
-            private static LocationSerializator GetActualSerializator() => new LocationSerializator_0_4_0();
+            private static LocationSerializator GetActualSerializator() => new LocationSerializator_0_5_0();
 
 
 

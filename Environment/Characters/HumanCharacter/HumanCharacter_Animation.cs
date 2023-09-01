@@ -6,8 +6,11 @@ using UnityEngine;
 
 namespace Servant.Characters
 {
-    public sealed partial class HumanCharacter
+    public sealed partial class HumanCharacter_OLD
     {
+        public event Action LockingAnimationEnterEvent = delegate { };
+        public event Action LockingAnimationExitEvent = delegate { };
+
         private const string IsMovingAnimName = "IsMove";
         private const string IsFallingAnimName = "IsFall";
         private const string JumpAnimName = "Jump";
@@ -15,6 +18,8 @@ namespace Servant.Characters
         private const string IsDodgingAnimName = "IsDodge";
         private const string IsClimbingAnimName = "IsClimbing";
         private const string LandingAnimName = "LandingRoll";
+        private const string MeleeGroundShootAnimName = "GroundMeleeShoot";
+        private const string MeleeAirShootAnimName = "AirMeleeShoot";
         private const int LandingAnimDiagIndex = 1;
         private const int LandingAnimVertIndex = 2;
         private const int FreeAnimLayerIndex = 0;
@@ -23,7 +28,12 @@ namespace Servant.Characters
         [SerializeField]
         private SpriteRenderer spriteRenderer;
 
+        public Vector2 AddedAnimationForce=Vector2.zero;
 
+        public void LockingAnimationEnter()
+        {
+            LockingAnimationEnterEvent();
+        }
         public void LockingAnimationExit()
         {
             LockingAnimationExitEvent();

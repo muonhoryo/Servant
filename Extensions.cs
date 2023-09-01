@@ -112,11 +112,11 @@ namespace Servant.Characters
 {
     public static class CharactersExtensions
     {
-        public static bool IsInAir(this IGroundCharacter owner)=>
-             owner.CurrentFallingState_ != IGroundCharacter.FallingState.StandingOnGround;
+        public static bool IsInAir(this IGroundCharacter.IFallingCheckingModule owner)=>
+             owner.CurrentFallingState_ != IGroundCharacter.IFallingCheckingModule.FallingState.StandingOnGround;
         public static bool IsFalling(this IGroundCharacter owner) =>
             owner.CurrentFallingState_ == IGroundCharacter.FallingState.Falling;
-        public static bool IsTheHitObjectGround(this IGarpoonCharacter owner) =>
+        public static bool IsTheHitObjectGround(this IGarpoonOwner owner) =>
             owner.GarpoonBase_.ShootedProjectile_.HitObject_.layer == Registry.GroundLayer;
         public static bool DoesHookCatch_(this IGarpoonBase owner)=>
             owner.ShootedProjectile_ != null && owner.ShootedProjectile_.HitObject_ != null;

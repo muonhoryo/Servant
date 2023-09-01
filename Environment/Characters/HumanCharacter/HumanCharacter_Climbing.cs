@@ -7,14 +7,15 @@ using UnityEngine;
 
 namespace Servant.Characters
 {
-    public sealed partial class HumanCharacter
+    public sealed partial class HumanCharacter_OLD
     {
         public event Action<IClimbingCharacter.ClimbingInfo> StartClimbingEvent=delegate { };
         public event Action ClimbingDoneEvent=delegate { };
 
         private IClimbableGroundChecker ClimbableGroundChecker;
         public  bool CanClimb_
-            =>!IsLockedControl_&& !IsRocking_ && !IsClimbing_ && ClimbableGroundChecker.HasClimbableGroundAround();
+            =>!IsLockedControl_&& !IsRocking_ && !IsClimbing_ && ClimbableGroundChecker.HasClimbableGroundAround()&&
+            !DoMeleeShoot_;
         public bool IsClimbing_ { get; private set; }
 
         private void ClimbingAnimationExit()

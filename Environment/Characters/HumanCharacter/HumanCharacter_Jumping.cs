@@ -8,10 +8,10 @@ using UnityEngine;
 
 namespace Servant.Characters
 {
-    public sealed partial class HumanCharacter
+    public sealed partial class HumanCharacter_OLD
     {
         private bool IsAllowedJump = true;
-        public bool CanJump_ => IsAllowedJump && !IsLockedControl_&&!this.IsInAir();
+        public bool CanJump_ => IsAllowedJump && !IsLockedControl_&&!this.IsInAir()&&!DoMeleeShoot_;
 
         public event Action JumpEvent=delegate { };
         public event Action JumpDelayStartEvent=delegate { };

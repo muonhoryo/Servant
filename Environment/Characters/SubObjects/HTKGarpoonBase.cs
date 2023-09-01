@@ -24,7 +24,7 @@ namespace Servant.Characters
         private GameObject GarpoonProjectilePrefab;
         [SerializeField]
         private SpriteRenderer GarpoonBaseSprite;
-        private IGarpoonCharacter Owner;
+        private IGarpoonOwner Owner;
         [SerializeField]
         private Vector2 ProjectileStartOffset;
         [SerializeField]
@@ -129,7 +129,7 @@ namespace Servant.Characters
                     CatchOffProjectileEvent -= ResetRocking;
                     StartPullingEvent -= ResetRocking;
                 }
-                Owner.StartRadialRocking(parsedObj.RockingDirection_, parsedObj.RockingSpeed_);
+                Owner.StartRadialRocking(parsedObj.RockingDirection_, parsedObj.RockingSpeedMultiplier_);
 
                 CatchOffProjectileEvent += ResetRocking;
                 StartPullingEvent += ResetRocking;
@@ -245,7 +245,7 @@ namespace Servant.Characters
                 if (GarpoonBaseSprite == null)
                     throw ServantException.GetNullInitialization("GarpoonBaseSprite");
             }
-            Owner = GetComponentInParent<IGarpoonCharacter>();
+            Owner = GetComponentInParent<IGarpoonOwner>();
             if (Owner == null)
                 throw ServantException.GetNullInitialization("Owner");
 

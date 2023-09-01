@@ -1,43 +1,34 @@
 ﻿
 
 
-using Servant.InteractionObjects;
 using System;
+using static Servant.Characters.IInteractingCharacter;
 
 namespace Servant.Characters
 {
-    public sealed partial class HumanCharacter
+    public sealed partial class HumanCharacter_OLD
     {
-        public bool CanInteract_ => !IsLockedControl_ && InteractiveTarget != null;
-        public event Action InteractionEvent=delegate { };
-        private IInteractiveObject InteractiveTarget;
-        bool IInteractingCharacter.AssignInteractiveTarget(IInteractiveObject obj)
+        public event Action InteractionEvent
         {
-            if (InteractiveTarget == null &&
-                obj != null)
-            {
-                obj.Show();
-                InteractiveTarget = obj;
-                return true;
-            }
-            else return false;
+            add { InteractionModule.InteractionEvent += value; }
+            remove { InteractionModule.InteractionEvent -= value;}
         }
-        bool IInteractingCharacter.RemoveInteractTarAssignment(IInteractiveObject removedObject)
+        public bool CanInteract_ => !IsLockedControl_ && InteractionModule.CanInteract_;
+
+        private IInteractionModule InteractionModule;
+
+        public void Interact()
         {
-            if (InteractiveTarget != null &&
-                InteractiveTarget == removedObject)
+            if (CanInteract_)
             {
-                InteractiveTarget.Hide();
-                InteractiveTarget = null;
-                return true;
+                InteractionModule.Interact();
             }
-            else return false;
         }
 
-        private void InternalInteract()
+        private void AwakeAction_Interaction()
         {
-            InteractiveTarget.Interact();
-            InteractionEvent();
+            if (!TryGetComponent(out InteractionModule))
+                throw ServantException.GetNullInitialization("InteractionModule");
         }
     }
 }

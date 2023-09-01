@@ -5,7 +5,7 @@ using MuonhoryoLibrary;
 
 namespace Servant.Characters
 {
-    public sealed partial class HumanCharacter
+    public sealed partial class HumanCharacter_OLD
     {
         public event Action<IGarpoonBase.IGarpoonPullableObj.PullingTargetInfo> StartPullingEvent = delegate { };
         public event Action StopPullingEvent = delegate { };
@@ -24,12 +24,12 @@ namespace Servant.Characters
         public bool CanStartRadialRocking_ => !IsRadialRocking_ && GarpoonBase_.ShootedProjectile_ != null;
         public bool CanStopRadialRocking_ => IsRadialRocking_;
         public bool IsRadialRocking_ { get; private set; } = false;
-        bool IGarpoonCharacter.CanUseGarpoon_ { get => CanUseGarpoon_; }
-        private bool CanUseGarpoon_ => !IsLockedControl_;
+        bool IGarpoonOwner.CanUseGarpoon_ { get => CanUseGarpoon_; }
+        private bool CanUseGarpoon_ => !IsLockedControl_&&!DoMeleeShoot_;
         public bool IsPulled_ { get; private set; } = false;
-        GameObject IGarpoonCharacter.UnpackedCharacter_ => gameObject;
+        GameObject IGarpoonOwner.UnpackedCharacter_ => gameObject;
         Vector3 IGarpoonBase.IGarpoonPullableObj.Position_ => transform.position;
-        Vector2 IGarpoonBase.IHittableObj.HitPosition_ => (Vector2)transform.position+HitPositionOffset;
+        Vector2 IGarpoonBase.IGarpoonHittableObj.HitPosition_ => (Vector2)transform.position+HitPositionOffset;
 
         IGarpoonBase.IPuller IGarpoonBase.IGarpoonPullableObj.StartPullingToTarget
             (IGarpoonBase.IGarpoonPullableObj.PullingTargetInfo info)
@@ -41,21 +41,21 @@ namespace Servant.Characters
 
             return InternalStartPullingToTarget(info);
         }
-        void IGarpoonCharacter.StartRopeRocking()
+        void IGarpoonOwner.StartRopeRocking()
         {
             if (CanStartRocking_)
             {
                 InternalStartRopeRocking();
             }
         }
-        void IGarpoonCharacter.StopRopeRocking()
+        void IGarpoonOwner.StopRopeRocking()
         {
             if (CanStopRocking_)
             {
                 InternalStopRopeRocking();
             }
         }
-        void IGarpoonCharacter.StartRadialRocking(int movingDirection, float rockingSpeed)
+        void IGarpoonOwner.StartRadialRocking(int movingDirection, float rockingSpeed)
         {
             if (movingDirection != 1 && movingDirection != -1)
                 throw new ServantException("Incorrect input direction.");
@@ -65,14 +65,14 @@ namespace Servant.Characters
                 InternalStartRadialRocking(movingDirection, rockingSpeed);
             }
         }
-        void IGarpoonCharacter.StopRadialRocking()
+        void IGarpoonOwner.StopRadialRocking()
         {
             if (CanStopRadialRocking_)
             {
                 InternalStopRadialRocking();
             }
         }
-        void IGarpoonCharacter.TurnGarpoon(bool isGarpoonActive)
+        void IGarpoonOwner.TurnGarpoon(bool isGarpoonActive)
         {
             Animator_.SetLayerWeight(FreeAnimLayerIndex, isGarpoonActive ? 0 : 1);
             Animator_.SetLayerWeight(GarpoonAnimLayerIndex, isGarpoonActive ? 1 : 0);

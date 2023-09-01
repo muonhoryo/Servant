@@ -7,9 +7,8 @@ using UnityEngine;
 
 namespace Servant.Characters
 {
-    public sealed partial class HumanCharacter : GroundMovableCharacter, IHumanCharacter,IAnimLockableCharacter
+    public sealed partial class HumanCharacter_OLD : GroundMovableCharacter, IHumanCharacter
     {
-        public event Action LockingAnimationExitEvent=delegate { };
         public event Action LockControlEvent = delegate { };
         public event Action UnlockControlEvent = delegate { };
         private bool IsLockedControl = false;
@@ -42,7 +41,6 @@ namespace Servant.Characters
         {
             if (CanDodge_)
             {
-                MovMode_TurnToDodging();
                 InternalStartDodging();
             }
         }
@@ -52,13 +50,6 @@ namespace Servant.Characters
             {
                 MovMode_TurnToGround();
                 InternalStopDodging();
-            }
-        }
-        public void Interact()
-        {
-            if (CanInteract_)
-            {
-                InternalInteract();
             }
         }
         public void Jump()

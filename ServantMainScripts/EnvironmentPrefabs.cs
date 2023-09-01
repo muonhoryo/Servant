@@ -20,6 +20,7 @@ namespace Servant.Serialization
         public static GameObject ClinePlatform_ => instance_.ClinePlatform;
         public static GameObject RadialRockingPoint_ => instance_.RadialRockingPoint;
         public static GameObject DeathArea_ => instance_.DeathArea;
+        public static GameObject GuardAndroid_ => instance_.GuardAndroid;
 
         [SerializeField]
         private GameObject MainCharacterPrefab;
@@ -47,6 +48,8 @@ namespace Servant.Serialization
         private GameObject RadialRockingPoint;
         [SerializeField]
         private GameObject DeathArea;
+        [SerializeField]
+        private GameObject GuardAndroid;
 
         public static EnvironmentPrefabs instance_
         {

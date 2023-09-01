@@ -1,7 +1,7 @@
 ﻿
-using UnityEngine;
 using Servant.Characters;
 using System;
+using UnityEngine;
 
 namespace Servant.Control
 {
@@ -10,14 +10,21 @@ namespace Servant.Control
         private void ResetGarpoonControllerState()
         {
             GarpoonControllerState state;
-            if (CtrlChar.GarpoonBase_.ShootedProjectile_ == null)
-                state = GarpoonStates.ReadyState;
-            else if (CtrlChar.GarpoonBase_.IsPull_)
-                state = GarpoonStates.PullState;
-            else if (CtrlChar.GarpoonBase_.ShootedProjectile_.HitObject_ == null)
-                state = GarpoonStates.ShootState;
+            if (CurrentWeapon_ == HumanUsedWeapon.Garpoon)
+            {
+                if (CtrlChar.GarpoonBase_.ShootedProjectile_ == null)
+                    state = GarpoonStates.ReadyState;
+                else if (CtrlChar.GarpoonBase_.IsPull_)
+                    state = GarpoonStates.PullState;
+                else if (CtrlChar.GarpoonBase_.ShootedProjectile_.HitObject_ == null)
+                    state = GarpoonStates.GarpoonShootState;
+                else
+                    state = GarpoonStates.HookState;
+            }
             else
-                state = GarpoonStates.HookState;
+            {
+                state = GarpoonStates.MeleeState;
+            }
             ChangeGarpoonControllerState(state);
         }
         private void ChangeGarpoonControllerState(GarpoonControllerState newState)
@@ -45,8 +52,12 @@ namespace Servant.Control
                     GarpoonBase.RotateToGlobalPoint(MainCameraBehaviour.singltone.GetCursorPos());
                     GarpoonBase.ShootProjectile();
                 }
+                else if (Input.GetButtonDown(Input_ChangeWeapon))
+                {
+                    Controller_.ChangeUsedWeapon();
+                }
             }
-            private static void Shoot_Update(CharacterController owner)
+            private static void GarpoonShoot_Update(CharacterController owner)
             {
                 if (Input.GetButtonUp(Input_Shoot))
                 {
@@ -57,7 +68,7 @@ namespace Servant.Control
             {
                 if (Input.GetButtonDown(Input_GarpoonCatchHookOff))
                 {
-                    owner.ChangeGarpoonControllerState(ShootState);
+                    owner.ChangeGarpoonControllerState(GarpoonShootState);
                     GarpoonBase.CatchHookOff();
                 }
                 else if (Input.GetButtonUp(Input_Shoot))
@@ -69,12 +80,25 @@ namespace Servant.Control
             {
                 if (Input.GetButtonDown(Input_GarpoonCatchHookOff))
                 {
-                    owner.ChangeGarpoonControllerState(ShootState);
+                    owner.ChangeGarpoonControllerState(GarpoonShootState);
                     GarpoonBase.CatchHookOff();
                 }
             }
+            private static void Melee_Update(CharacterController owner)
+            {
+                if (Input.GetButtonDown(Input_Shoot))
+                {
+                    int dir = MainCameraBehaviour.singltone.GetCursorPos().x>Controller_.transform.position.x
+                        ?1:-1;
+                    CtrlChar.MeleeShoot(dir);
+                }
+                else if (Input.GetButtonDown(Input_ChangeWeapon))
+                {
+                    Controller_.ChangeUsedWeapon();
+                }
+            }
             //Enter
-            private static void Shoot_Enter(CharacterController owner)
+            private static void GarpoonShoot_Enter(CharacterController owner)
             {
                 GarpoonBase.ShootedProjectile_.HitEvent += (i) => owner.ChangeGarpoonControllerState(HookState);
                 GarpoonBase.ShootedProjectile_.DestroyEvent += () => owner.ChangeGarpoonControllerState(ReadyState);
@@ -86,10 +110,10 @@ namespace Servant.Control
                 UpdateAction: Ready_Update,
                 EnterAction:null,
                 ExitAction: null);
-            public static readonly GarpoonControllerState ShootState = new GarpoonControllerState(
+            public static readonly GarpoonControllerState GarpoonShootState = new GarpoonControllerState(
                 StateName: "Shoot",
-                UpdateAction: Shoot_Update,
-                EnterAction: Shoot_Enter,
+                UpdateAction: GarpoonShoot_Update,
+                EnterAction: GarpoonShoot_Enter,
                 ExitAction: null);
             public static readonly GarpoonControllerState HookState = new GarpoonControllerState(
                 StateName: "Hook",
@@ -101,12 +125,17 @@ namespace Servant.Control
                 UpdateAction: Pull_Update,
                 EnterAction: null,
                 ExitAction: null);
+            public static readonly GarpoonControllerState MeleeState = new GarpoonControllerState(
+                StateName: "Melee",
+                UpdateAction: Melee_Update,
+                EnterAction: null,
+                ExitAction: null);
             public static readonly GarpoonControllerState NoneState = new GarpoonControllerState
                 (StateName: "None", null, null, null);
 
             public static void AwakeAction(CharacterController owner)
             {
-                GarpoonBase.ShootEvent += (i) => owner.ChangeGarpoonControllerState(ShootState);
+                GarpoonBase.ShootEvent += (i) => owner.ChangeGarpoonControllerState(GarpoonShootState);
 
                 GarpoonBase.StartPullingEvent += () =>  owner.ChangeGarpoonControllerState(PullState);
             }

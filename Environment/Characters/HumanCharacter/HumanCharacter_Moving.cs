@@ -1,21 +1,14 @@
 ﻿
 
 
-using JetBrains.Annotations;
-using MuonhoryoLibrary;
 using System;
 using UnityEngine;
 
 namespace Servant.Characters
 {
-    public sealed partial class HumanCharacter
+    public sealed partial class HumanCharacter_OLD
     {
-        public override bool CanStartMoving_ =>!IsLockedControl_&&!IsMoving_&&!this.HasWallsAtMovingDirection(WallChecker_);
-        public override bool CanStopMoving_ => IsMoving_&& CanStopMoving;
-        private bool CanChangeMovingDirection = true;
-        private bool CanStopMoving = true;
-        public override bool CanChangeMovingDirection_ => CanChangeMovingDirection&&!IsLockedControl_;
-        protected override float DefaultMoveSpeed_ => GlobalConstants.Singlton.HumanCharacters_RunSpeed;
+        public override bool CanSetMovingDirection_ => CanChangeMovingDirection&&!IsLockedControl_;
         protected override void InternalStartMoving()
         {
             IsMoving_ = true;
@@ -121,6 +114,11 @@ namespace Servant.Characters
                 speedValue = GlobalConstants.Singlton.HumanCharacters_DodgingSpeedMinBuff;
             }
             DodgingSpeedModifier=MoveSpeed_.AddModifier_Add(speedValue);
+            CanChangeMovingDirection = false;
+            IsDodging_ = true;
+            SetDodgingAnim(true);
+            ChangeLayerToBackGround();
+            StartDodgingEvent(DodgingSpeedModifier.Modifier_);
         }
         private void MovMode_ForceDodgingEnter()
         {
@@ -187,6 +185,7 @@ namespace Servant.Characters
 
             if (angle < GlobalConstants.Singlton.HumanCharacters_GroundForceDodgeMinAngle)
             {
+                InternalStopDodging();
                 InternalStopMoving();
             }
         }

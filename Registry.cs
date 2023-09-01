@@ -13,6 +13,7 @@ namespace Servant
         public const int GroundLayer = 6;
         public const int MovableItemLayer = 7;
         public const int CharactersLayer=8;
+        public const int BackGroundCharactersLayer =9;
         public static Control.CharacterController CharacterController_=> Control.CharacterController.Controller_;
         public static SaveInfoContainer SaveInfoContainer;
         public static SaveLoadSystem.ILocationSettings SettingsOfCurrentLocation;
@@ -25,6 +26,7 @@ namespace Servant
     {
         public static readonly BuildVersion v0_3_0 = new(0, 3, 0);
         public static readonly BuildVersion v0_4_0 = new(0, 4, 0);
+        public static readonly BuildVersion v0_5_0 = new(0, 5, 0);
 
         public BuildVersion(int ReleaseVersion, int SystemVersion, int FixVersion)
         {

@@ -24,7 +24,24 @@ namespace Servant.Control
         private const string Input_GarpoonCatchHookOff = "CatchOff";
         private const string Input_Dodge = "Dodge";
         private const string Input_Climb = "Climb";
+        private const string Input_ChangeWeapon = "ChangeWeapon";
         //Control
+        public event Action<HumanUsedWeapon> ChangeUsedWeaponEvent=delegate { };
+        public enum HumanUsedWeapon 
+        {
+            Garpoon,
+            Sword
+        }
+        public HumanUsedWeapon CurrentWeapon_ { get; private set; } = HumanUsedWeapon.Garpoon;
+        private void ChangeUsedWeapon()
+        {
+            if (CurrentWeapon_ == HumanUsedWeapon.Garpoon)
+                CurrentWeapon_ = HumanUsedWeapon.Sword;
+            else
+                CurrentWeapon_ = HumanUsedWeapon.Garpoon;
+            ChangeUsedWeaponEvent(CurrentWeapon_);
+            OnEnable();
+        }
         private static float GetHorizontalDirection() => Input.GetAxisRaw(Input_Horizontal);
         private static void ChangeMovingDirection(float movingDirection) =>
            CtrlChar.MovingDirection_ = movingDirection > 0 ? 1 : -1;

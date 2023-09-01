@@ -10,7 +10,7 @@ using Servant.Serialization;
 
 namespace Servant.Characters
 {
-    public sealed partial class HumanCharacter :  ISerializableObject<MainCharacterData_0_3_0>, IResetedEnvinronment
+    public sealed partial class HumanCharacter_OLD :  ISerializableObject<MainCharacterData_0_3_0>, IResetedEnvinronment
     {
         private MainCharacterData_0_3_0 serializationData;
         private void InitializeFromAvailibleData()
@@ -72,7 +72,7 @@ namespace Servant.Serialization._0_3_0
         }
         public void InstantiateObject()
         {
-            this.InstanceAndInitialize<Characters.HumanCharacter>(EnvironmentPrefabs.HumanCharacterPrefab_);
+            this.InstanceAndInitialize<Characters.HumanCharacter_OLD>(EnvironmentPrefabs.HumanCharacterPrefab_);
         }
         public string ToJson()
         {

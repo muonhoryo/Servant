@@ -5,37 +5,42 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using static Servant.Characters.IGroundCharacter;
 
-namespace Servant.Characters
+namespace Servant.Characters.COP
 {
-    public sealed class WallChecker:MonoBehaviour, IWallChecker
+    public abstract class CharacterWallCheckingModule_Simple:Module,IWallCheckingModule
     {
-        public event Action FoundLeftWallEvent=delegate { };
-        public event Action LostLeftWallEvent=delegate { };
-        public event Action FoundRightWallEvent=delegate { };
-        public event Action LostRightWallEvent=delegate { };
+        public event Action FoundWallAtRightSideEvent=delegate { };
+        public event Action FoundWallAtLeftSideEvent=delegate { };
+        public event Action LostWallAtRightSideEvent=delegate { };
+        public event Action LostWallAtLeftSideEvent=delegate { };
+
         public bool IsThereLeftWall_ { get; private set; } = false;
         public bool IsThereRightWall_ { get; private set; } = false;
         private bool WasCollisedByRight = false;
         private bool WasCollisedByLeft = false;
+
+        public bool HasWallAtDirection(int direction)=>
+             direction > 0 ? IsThereRightWall_ : IsThereLeftWall_;
 
         private void FixedUpdate()
         {
             if (IsThereLeftWall_ != WasCollisedByLeft)
             {
                 if (WasCollisedByLeft)
-                    FoundLeftWallEvent();
+                    FoundWallAtLeftSideEvent();
                 else
-                    LostLeftWallEvent();
+                    LostWallAtLeftSideEvent();
 
                 IsThereLeftWall_ = WasCollisedByLeft;
             }
             if (IsThereRightWall_ != WasCollisedByRight)
             {
                 if (WasCollisedByRight)
-                    FoundRightWallEvent();
+                    FoundWallAtRightSideEvent();
                 else
-                    LostRightWallEvent();
+                    LostWallAtRightSideEvent();
 
                 IsThereRightWall_ = WasCollisedByRight;
             }
@@ -56,7 +61,7 @@ namespace Servant.Characters
             {
                 Vector2 dir = contact.point.x < transform.position.x ? Vector2.left : Vector2.right;
                 float dot = Math.Abs(Vector2.Dot(contact.normal, dir));
-                if (dot > GlobalConstants.Singlton.HumanCharacters_WallDetectionMinCos)
+                if (dot > WallDetectionMinCos_)
                 {
                     if (dir.x > 0)
                     {
@@ -72,15 +77,15 @@ namespace Servant.Characters
         }
         private void OnCollisionStay2D(Collision2D collision)
         {
-            if (!WasCollisedByLeft || !WasCollisedByRight&&
+            if ((!WasCollisedByLeft || !WasCollisedByRight) &&
                 collision.collider.gameObject.layer.IsInLayerMask(Registry.GroundLayerMask))
             {
                 int dir = WasCollisedWithAWall(collision);
-                if (dir > 0&&!WasCollisedByRight)
+                if (dir > 0 && !WasCollisedByRight)
                 {
                     WasCollisedByRight = true;
                 }
-                else if(dir< 0&&!WasCollisedByLeft)
+                else if (dir < 0 && !WasCollisedByLeft)
                 {
                     WasCollisedByLeft = true;
                 }
@@ -93,5 +98,8 @@ namespace Servant.Characters
         }
         private void OnDisable()
             => enabled = true;
+
+        protected abstract float WallDetectionMinCos_ { get; }
+        protected sealed override bool CanTurnActivityFromOutside_ => false;
     }
 }

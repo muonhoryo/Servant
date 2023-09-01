@@ -13,5 +13,6 @@
     "HumanCharacters_GroundForceDodgeMinAngle": 50.0,
     "HTK_ProjectileMaxDistance": 4.0,
     "Garpoon_CollisionForceDirectionToStopPull": 0.10000000149011612,
-    "Garpoon_PullDoneThreshold": 0.10000000149011612
+    "Garpoon_PullDoneThreshold": 0.10000000149011612,
+    "GuardAndroid_MovingSpeed": 2.0
 }

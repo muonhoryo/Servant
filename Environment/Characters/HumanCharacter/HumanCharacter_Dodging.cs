@@ -3,12 +3,13 @@ using UnityEngine;
 
 namespace Servant.Characters
 {
-    public sealed partial class HumanCharacter
+    public sealed partial class HumanCharacter_OLD
     {
         public event Action<float> StartDodgingEvent=delegate { };
         public event Action StopDodgingEvent=delegate { };
         private CompositeParameter.ICharacterConstModifier DodgingSpeedModifier;
-        public bool CanDodge_ => !IsDodging_ && !IsLockedControl_ && !this.IsInAir()&&IsMoving_;
+        public bool CanDodge_ => !IsDodging_ && !IsLockedControl_ && !this.IsInAir()&& 
+            !this.HasWallsAtMovingDirection(WallChecker_);
         public bool CanStopDodge_ => IsDodging_&& CanStopDodge;
         public bool IsDodging_ { get; private set; } = false;
         private bool IsForceDodge = false;
@@ -16,6 +17,7 @@ namespace Servant.Characters
         private bool CanStopDodge = true;
         private void InternalStopDodging()
         {
+            ChangeLayerToCharacters();
             CanChangeMovingDirection = true;
             SetDodgingAnim(false);
             IsDodging_ = false;
@@ -23,10 +25,9 @@ namespace Servant.Characters
         }
         private void InternalStartDodging()
         {
-            CanChangeMovingDirection = false;
-            IsDodging_ = true;
-            SetDodgingAnim(true);
-            StartDodgingEvent(DodgingSpeedModifier.Modifier_);
+            if (!IsMoving_)
+                InternalStartMoving();
+            MovMode_TurnToDodging();
         }
 
         private void AwakeAction_Dodging()
@@ -38,17 +39,14 @@ namespace Servant.Characters
                     void StartForceDodging()
                     {
                         if (!IsMoving_)
-                            StartMoving();
+                            InternalStartMoving();
                         MovMode_TurnToForceDodgingMode();
-                        InternalStartDodging();
                     }
                     if (angle > 180)
                     {
                         if (360 - angle >= GlobalConstants.Singlton.HumanCharacters_GroundForceDodgeMinAngle)
                         {
-                            if (!CanChangeMovingDirection)
-                                CanChangeMovingDirection = true;
-                            MovingDirection_ = 1;
+                            InternalSetMovingDirection(1);
                             StartForceDodging();
                         }
                     }
@@ -56,9 +54,7 @@ namespace Servant.Characters
                     {
                         if (angle >= GlobalConstants.Singlton.HumanCharacters_GroundForceDodgeMinAngle)
                         {
-                            if (!CanChangeMovingDirection)
-                                CanChangeMovingDirection = true;
-                            MovingDirection_ = -1;
+                            InternalSetMovingDirection(-1);
                             StartForceDodging();
                         }
                     }

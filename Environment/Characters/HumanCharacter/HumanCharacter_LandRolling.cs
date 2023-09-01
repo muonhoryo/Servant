@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Servant.Characters
 {
-    public sealed partial class HumanCharacter
+    public sealed partial class HumanCharacter_OLD
     {
         private enum LandRollingType 
         {
@@ -39,7 +39,9 @@ namespace Servant.Characters
             {
                 UnityFixedUpdateEvent -= MoveAction;
                 LandingRollDoneEvent -= ResetEvents;
+                ChangeLayerToCharacters();
             }
+            ChangeLayerToBackGround();
             UnityFixedUpdateEvent += MoveAction;
             LandingRollDoneEvent += ResetEvents;
             RollingType = LandRollingType.Diagonal;

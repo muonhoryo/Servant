@@ -77,13 +77,7 @@ namespace Servant.Control
             }
             private static void Dodge_UpdateAction(CharacterController owner)
             {
-                float dir = GetHorizontalDirection();
-                if (dir == 0)
-                {
-                    CtrlChar.StopDodging();
-                    CtrlChar.StopMoving();
-                }
-                else if (!Input.GetButton(Input_Dodge)) CtrlChar.StopDodging();
+                if (!Input.GetButton(Input_Dodge)) CtrlChar.StopDodging();
                 else if (Input.GetButtonDown(Input_Jump)) CtrlChar.Jump();
 
                 InteractionAction();
@@ -99,7 +93,8 @@ namespace Servant.Control
                 }
                 else
                 {
-                    CtrlChar.StopMoving();
+                    if (!Input.GetButton(Input_Dodge))
+                        CtrlChar.StopMoving();
                 }
             }
             private static void InteractionAction()

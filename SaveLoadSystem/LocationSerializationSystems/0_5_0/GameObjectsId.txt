@@ -1,0 +1,14 @@
+0: MainCharacter
+1: NonePassablePlatform
+2: SimpleLocationTransit
+3: FAKELocationTransit
+4: Wall
+5: MovableBox
+6: SaveInfoContainer
+7: CheckPoint
+8: StartButton
+9: LoadButton
+10: ClinePlatform
+11: RadialRockingPoin
+12: DeathArea
+13: GuardAndroid (0_5_0)

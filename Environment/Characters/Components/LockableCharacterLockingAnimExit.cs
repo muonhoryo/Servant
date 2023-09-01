@@ -6,13 +6,17 @@ namespace Servant.Characters
 {
     public sealed class LockableCharacterLockingAnimExit : StateMachineBehaviour
     {
-        public override void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+        private IAnimLockableCharacter Owner;
+        public override void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
         {
-            var parsedOwner = animator.GetComponent<IAnimLockableCharacter>();
-            if (parsedOwner == null)
+            if (!animator.TryGetComponent(out Owner))
                 throw ServantException.GetNullInitialization("Owner");
 
-            parsedOwner.LockingAnimationExit();
+            Owner.LockingAnimationEnter();
+        }
+        public override void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+        {
+            Owner.LockingAnimationExit();
         }
     }
 }
